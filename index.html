@@ -690,7 +690,7 @@ function renderMatches(){
       + '<button class="btn" data-a="sum">Yhteenveto</button><button class="btn gray" data-a="rec">Jatka kirjaamista</button>'
       + '<button class="btn red" data-a="del">Poista</button></div>';
   });
-  h += '</div></div><div class="card"><h3>Varmuuskopio</h3><p class="help">Tallenna kaikki tiedot (pelaajat ja ottelut) tiedostoksi tai palauta aiempi varmuuskopio.</p><div class="row">'
+  h += '</div></div><div class="card"><h3>Varmuuskopio</h3><p class="help">Tallenna kaikki tiedot (pelaajat ja ottelut) tiedostoksi: valitse jakovalikosta &quot;Tallenna tiedostoihin&quot; ja esim. iCloud Drive. Palauta-napilla valitset tiedoston Tiedostot-sovelluksesta.</p><div class="row">'
     + '<button class="btn gray" id="bk">Tallenna varmuuskopio</button><button class="btn gray" id="rs">Palauta varmuuskopio</button>'
     + '<input type="file" id="rsfile" accept=".json,application/json" class="hidden"></div></div>';
   main.innerHTML = h;
@@ -714,7 +714,22 @@ function renderMatches(){
       save(); go('ottelut');
     });
   };
-  document.getElementById('bk').onclick = function(){ download('lentopallo_varmuuskopio_' + today() + '.json', JSON.stringify(S, null, 1), 'application/json'); };
+  document.getElementById('bk').onclick = function(){
+    var name = 'lentopallo_varmuuskopio_' + today() + '.json', json = JSON.stringify(S, null, 1), file = null;
+    try { file = new File([json], name, {type:'application/json'}); } catch(e){ file = null; }
+    if (file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      try {
+        navigator.share({files:[file], title:'Lentopallotilastot varmuuskopio'}).then(function(){
+          toast('Varmuuskopio tallennettu');
+        }).catch(function(err){
+          if (err && err.name === 'AbortError') return;
+          download(name, json, 'application/json');
+        });
+        return;
+      } catch(e){}
+    }
+    download(name, json, 'application/json');
+  };
   document.getElementById('rs').onclick = function(){ document.getElementById('rsfile').click(); };
   document.getElementById('rsfile').onchange = function(ev){
     var f = ev.target.files[0]; if (!f) return;
