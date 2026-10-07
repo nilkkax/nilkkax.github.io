@@ -108,6 +108,18 @@ tr.tot td{background:#fff6d6;font-weight:800;border-top:3px solid #333}
 td.pos{color:var(--green);font-weight:800} td.neg{color:var(--red);font-weight:800}
 td.net{font-size:22px;font-weight:900}
 .zero{color:#a3abb8}
+/* Arvosanajakauma */
+#disttable{font-size:18px;table-layout:auto}
+#disttable th,#disttable td{padding:6px 3px}
+#disttable th.sk{font-size:18px}
+#disttable th.g{font-size:19px;font-weight:900;min-width:34px}
+#disttable th.g.q1{background:#bbf7d0;color:#064e1f} #disttable th.g.q2{background:#e2f7a8;color:#365314}
+#disttable th.g.qm{background:#fde4b0;color:#78350f} #disttable th.g.qw{background:#fecaca;color:#7f1d1d}
+#disttable .s0{border-left:3px solid #4b5563}
+#disttable td.kpl{font-weight:800;background:#f6f7f9}
+#disttable td.ka{font-weight:800;background:#f6f7f9;white-space:nowrap}
+#disttable td.d{font-weight:700}
+#disttable tr.tot td.kpl,#disttable tr.tot td.ka{background:#fff0bf}
 .seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .seg button{min-height:58px;padding:0 20px;border-radius:12px;background:#d7dde7;font-weight:700;font-size:21px}
 .seg button.on{background:var(--blue);color:#fff}
@@ -444,6 +456,36 @@ function legendHtml(){
   });
   return h + '</div></div>';
 }
+// Jakaumataulukko: joka taidolle sarakkeet 1..max, kpl, ka (1 = paras)
+function distCells(st){
+  var h = '';
+  SKILLS.forEach(function(k){
+    var x = st[k.k];
+    for (var g=1; g<=k.max; g++){
+      var c = x.dist[g];
+      h += '<td class="d'+(g===1?' s0':'')+(c?'':' zero')+'">'+(x.n ? c : '')+'</td>';
+    }
+    h += x.n ? '<td class="kpl">'+x.n+'</td><td class="ka">'+dec(x.sum/x.n)+'</td>' : '<td class="kpl zero">–</td><td class="ka zero">–</td>';
+  });
+  return h;
+}
+function distHtml(sm, set){
+  var h = '<div class="card"><h2>Arvosanajakauma – '+(set==='all' ? 'koko ottelu' : 'erä '+set)+'</h2>'
+    + '<p class="help" style="margin-top:-4px">Montako kertaa kukin arvosana annettiin. <b>1 = paras</b> (vihreä), suurin numero = huonoin (punainen). ka = keskiarvo, pienempi on parempi.</p>'
+    + '<div class="tablewrap"><table id="disttable"><thead><tr><th rowspan="2">Nro</th><th rowspan="2">Nimi</th>';
+  SKILLS.forEach(function(k){ h += '<th class="sk s0" colspan="'+(k.max+2)+'">'+k.name+'</th>'; });
+  h += '</tr><tr>';
+  SKILLS.forEach(function(k){
+    for (var g=1; g<=k.max; g++) h += '<th class="g '+gradeCls(g,k.max)+(g===1?' s0':'')+'" aria-label="'+k.name+' arvosana '+g+'">'+g+'</th>';
+    h += '<th>kpl</th><th>ka</th>';
+  });
+  h += '</tr></thead><tbody>';
+  if (!sm.rows.length) h += '<tr><td colspan="23" class="zero">Ei kirjauksia</td></tr>';
+  sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+distCells(r.s)+'</tr>'; });
+  h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+distCells(sm.team)+'</tr></tbody></table></div>'
+    + '<p class="help">Hyökkäyspiste lasketaan hyökkäyksen arvosanaksi 1 ja ässä syötön arvosanaksi 1. Vastaanotto-, syöttö- ja hyökkäysvirhe lasketaan arvosanaksi 4 / 4 / 3. Jokainen merkintä lasketaan kerran.</p></div>';
+  return h;
+}
 function renderSum(){
   var main = document.getElementById('main'), m = cur();
   if (!m){ main.innerHTML = '<div class="card empty">Ei valittua ottelua. Valitse ottelu Ottelut-välilehdeltä.</div>'; return; }
@@ -462,6 +504,7 @@ function renderSum(){
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
     + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. Hyökkäyspiste = hyökkäys 1 ja ässä = syöttö 1 (+1). Vastaanotto 4, syöttö 4 ja hyökkäys 3 ovat samalla vastaanotto-, syöttö- ja hyökkäysvirheitä (−1); kumpikin painike kirjaa saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + distHtml(sm, sumSet)
     + legendHtml()
     + '<div class="card"><h3>Vienti</h3><div class="row">'
     + '<button class="btn" id="csvsum">⬇ Yhteenveto CSV</button>'
@@ -489,7 +532,7 @@ function line(arr, sep){ return arr.map(function(v){ return q(v, sep); }).join(s
 function csvSummary(m, sep){
   sep = sep || ';';
   var head = ['Ottelu','Päivä','Erä','Nro','Nimi'];
-  SKILLS.forEach(function(s){ head.push(s.plural+' kpl', s.name+' ka (1 = paras)'); for (var g=1; g<=s.max; g++) head.push(s.name+' '+g); });
+  SKILLS.forEach(function(s){ head.push(s.plural+' kpl', s.name+' ka (1 = paras)'); for (var g=1; g<=s.max; g++) head.push(s.name+' '+g+' (kpl)'); });
   POINTS.concat(ERRORS).forEach(function(s){ head.push(s.plural); });
   head.push('Plussat','Miinukset','Netto');
   var out = [line(head, sep)];
