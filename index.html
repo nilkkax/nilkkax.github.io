@@ -61,10 +61,17 @@ main{padding:12px}
 .pl.on{background:var(--blue);border-color:var(--sel);box-shadow:0 0 0 4px var(--sel);color:#fff}
 #actions{position:relative}
 #actions.off .act{opacity:.35}
-#selinfo{font-size:23px;font-weight:800;min-height:62px;display:flex;align-items:center;padding:0 14px;border-radius:12px;background:#fff;border:3px dashed var(--line);margin-bottom:10px}
+#selinfo{font-size:22px;font-weight:800;height:62px;overflow:hidden;line-height:1.12;display:flex;align-items:center;padding:0 14px;border-radius:12px;background:#fff;border:3px dashed var(--line);margin-bottom:10px}
 #selinfo.on{border:3px solid var(--sel);background:#fffbe6}
-#selinfo.done{border:3px solid #0f5c2c;background:var(--green);color:#fff}
-.skill{display:grid;grid-template-columns:150px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+#selinfo.done{border:3px solid #0f5c2c;background:var(--green);color:#fff;font-size:20px}
+.skill{display:grid;grid-template-columns:128px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.act.gr{min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px;min-width:0}
+.act.gr .gn{font-size:34px;font-weight:900;line-height:1}
+.act.gr .gl{font-size:15px;font-weight:700;line-height:1.12;margin-top:4px;text-align:center;max-width:100%;overflow-wrap:break-word}
+.gtxt{font-size:18px;color:var(--muted)}
+.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 24px;font-size:18px}
+.legend b{display:block;margin-top:4px}
+.legend .q{display:inline-block;min-width:26px;text-align:center;font-weight:800;border-radius:6px;margin-right:6px;border:2px solid}
 .skill .lbl{font-size:20px;font-weight:800;line-height:1.15}
 .skill .lbl small{display:block;font-size:15px;font-weight:700;color:var(--green)}
 .grades{display:grid;gap:8px}
@@ -137,6 +144,7 @@ td.net{font-size:22px;font-weight:900}
 #modal .box{background:#fff;border-radius:18px;padding:24px;max-width:560px;width:100%;font-size:23px}
 #modal .row{justify-content:flex-end;margin-top:20px}
 
+@media (min-width:901px){ #toast{left:24px;transform:none;max-width:38%} }
 @media (max-width:900px){
   #rec{grid-template-columns:1fr;grid-template-areas:'left' 'actions' 'recent';grid-template-rows:auto}
   #players{grid-template-columns:repeat(4,1fr)}
@@ -168,10 +176,14 @@ td.net{font-size:22px;font-weight:900}
 // ---------- Määritykset ----------
 var KEY = 'lentopallo_tilastot_v1';
 var SKILLS = [
-  {k:'V', name:'Vastaanotto', max:4, plural:'Vastaanotot'},
-  {k:'H', name:'Hyökkäys', max:3, plural:'Hyökkäykset'},
-  {k:'S', name:'Syöttö', max:4, plural:'Syötöt'},
-  {k:'P', name:'Passi', max:2, plural:'Passit'}
+  {k:'V', name:'Vastaanotto', max:4, plural:'Vastaanotot',
+   labels:['kuppi / keskiuhka', 'passattavissa', 'jää kauas 4–5 m', 'ässä / virhe']},
+  {k:'H', name:'Hyökkäys', max:3, plural:'Hyökkäykset',
+   labels:['piste', 'pallon saa pelattua', 'torjunta / virhe']},
+  {k:'S', name:'Syöttö', max:4, plural:'Syötöt',
+   labels:['ässä / seinille', 'vo rikki, ei hyvä', 'kuppi, nosto vastustajalle', 'virhe']},
+  {k:'P', name:'Passi', max:2, plural:'Passit',
+   labels:['hyvä passi / pystyy lyömään', 'lyömätön / verkon päällä']}
 ];
 var POINTS = [
   {k:'HP', name:'Hyökkäyspiste', label:'Hyökkäys&shy;piste', short:'Hyökk.&shy;piste', plural:'Hyökkäyspisteet'},
@@ -197,6 +209,8 @@ function gradeCls(g, max){
   if (g === max) return 'qw';
   return (max === 4 && g === 2) ? 'q2' : 'qm';
 }
+function skillOf(k){ for (var i=0;i<SKILLS.length;i++) if (SKILLS[i].k===k) return SKILLS[i]; return null; }
+function gradeText(k, g){ var s = skillOf(k); return (s && s.labels[g-1]) || ''; }
 function skillName(k){ for (var i=0;i<SKILLS.length;i++) if (SKILLS[i].k===k) return SKILLS[i].name; return k; }
 
 // ---------- Tila ----------
@@ -225,13 +239,13 @@ function sortedRoster(){ return S.roster.slice().sort(function(a,b){ return (par
 function pById(pid){ for (var i=0;i<S.roster.length;i++) if (S.roster[i].id===pid) return S.roster[i]; return null; }
 function evLabel(e){
   var b = BYKEY[e.type]; if(!b) return e.type;
-  if (b.kind==='g') return b.d.name + ' ' + e.g;
+  if (b.kind==='g') return b.d.name + ' ' + e.g + (gradeText(e.type, e.g) ? ' – ' + gradeText(e.type, e.g) : '');
   var l = LINK[e.type];
   return b.d.name + (b.kind==='p' ? ' +1' : ' −1') + (l ? ' (' + skillName(l.skill).toLowerCase() + ' ' + l.g + ')' : '');
 }
 function evTag(e){
   var b = BYKEY[e.type]; if(!b) return '';
-  if (b.kind==='g') return '<span class="tag g">'+esc(b.d.name)+' '+e.g+'</span>';
+  if (b.kind==='g') return '<span class="tag g">'+esc(b.d.name)+' '+e.g+'</span> <span class="gtxt">'+esc(gradeText(e.type, e.g))+'</span>';
   var l = LINK[e.type];
   return '<span class="tag '+(b.kind==='p'?'p':'m')+'">'+esc(b.d.name)+(b.kind==='p'?' +1':' −1')+'</span>'
     + (l ? '<span class="tag g">'+esc(skillName(l.skill))+' '+l.g+'</span>' : '');
@@ -285,7 +299,7 @@ function renderRec(){
   h += '</div></section><div id="recent"></div><section id="actions"><div id="selinfo"></div>';
   SKILLS.forEach(function(s){
     h += '<div class="skill '+s.k+'"><div class="lbl">'+s.name+'<small>1 = paras</small></div><div class="grades" style="grid-template-columns:repeat('+s.max+',1fr)">';
-    for (var g=1; g<=s.max; g++) h += '<button class="act '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+(g===1?' (paras)':g===s.max?' (huonoin)':'')+'">'+g+'</button>';
+    for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+'"><span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
     h += '</div></div>';
   });
   h += '<div class="secthead">Pisteet (+1)</div><div class="multi three">';
@@ -341,7 +355,7 @@ function record(type, g){
   syncMatchPlayer(m, p);
   save();
   selPid = null; updSel(); updRecent();
-  flash('✓ Kirjattu: ' + pLabel(p.num, p.name) + ' – ' + evLabel(e));
+  flash('✓ ' + pLabel(p.num, p.name) + ': ' + evLabel(e));
 }
 function undo(){
   var m = cur(); if (!m || !m.events.length){ toast('Ei kumottavaa', 'warn'); return; }
@@ -409,6 +423,16 @@ function statCells(s){
   h += '<td class="pos">'+s.plus+'</td><td class="neg">'+s.minus+'</td><td class="net '+(net>0?'pos':net<0?'neg':'')+'">'+(net>0?'+':'')+net+'</td>';
   return h;
 }
+function legendHtml(){
+  var qc = {q1:'#bbf7d0;border-color:#15803d', q2:'#e2f7a8;border-color:#65a30d', qm:'#fde4b0;border-color:#d97706', qw:'#fecaca;border-color:#b91c1c'};
+  var h = '<div class="card"><h3>Arvosanojen selitteet (1 = paras)</h3><div class="legend">';
+  SKILLS.forEach(function(s){
+    h += '<div><b>' + s.name + '</b>';
+    s.labels.forEach(function(t, i){ h += '<div><span class="q" style="background:' + qc[gradeCls(i+1, s.max)] + '">' + (i+1) + '</span>' + esc(t) + '</div>'; });
+    h += '</div>';
+  });
+  return h + '</div></div>';
+}
 function renderSum(){
   var main = document.getElementById('main'), m = cur();
   if (!m){ main.innerHTML = '<div class="card empty">Ei valittua ottelua. Valitse ottelu Ottelut-välilehdeltä.</div>'; return; }
@@ -427,6 +451,7 @@ function renderSum(){
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
     + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. Hyökkäyksiin sisältyvät hyökkäyspisteet (arvosana 1) ja syöttöihin ässät (arvosana 1). Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + legendHtml()
     + '<div class="card"><h3>Vienti</h3><div class="row">'
     + '<button class="btn" id="csvsum">⬇ Yhteenveto CSV</button>'
     + '<button class="btn" id="csvev">⬇ Tapahtumat CSV</button>'
@@ -472,13 +497,14 @@ function csvSummary(m, sep){
   return out.join('\r\n');
 }
 function csvEvents(m){
-  var out = [line(['Järjestys','Aika','Erä','Nro','Nimi','Suoritus','Arvioitu taito','Arvosana (1 = paras)','Pisteet'], ';')];
+  var out = [line(['Järjestys','Aika','Erä','Nro','Nimi','Suoritus','Arvioitu taito','Arvosana (1 = paras)','Selite','Pisteet'], ';')];
   m.events.forEach(function(e, i){
     var b = BYKEY[e.type] || {kind:'?', d:{name:e.type}};
     var l = LINK[e.type];
     var skill = b.kind==='g' ? b.d.name : l ? skillName(l.skill) : '';
     var grade = b.kind==='g' ? e.g : l ? l.g : '';
-    out.push(line([i+1, localDate(e.ts) + ' ' + fiTime(e.ts), e.set, e.num, e.name, b.d.name, skill, grade, b.kind==='p' ? '+1' : b.kind==='e' ? '-1' : ''], ';'));
+    var txt = b.kind==='g' ? gradeText(e.type, e.g) : l ? gradeText(l.skill, l.g) : '';
+    out.push(line([i+1, localDate(e.ts) + ' ' + fiTime(e.ts), e.set, e.num, e.name, b.d.name, skill, grade, txt, b.kind==='p' ? '+1' : b.kind==='e' ? '-1' : ''], ';'));
   });
   return out.join('\r\n');
 }
