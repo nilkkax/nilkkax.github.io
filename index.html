@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lentopallo">
+<meta name="application-name" content="Lentopallo">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="format-detection" content="telephone=no">
+<title>Lentopallotilastot</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAF8klEQVR42u2dwW0cMQxFN8KeAx99SQUuIF3kkELTRwoIkBJyDFJBDgGMwFjPSBqJ/CTfv3rhnRWfPskZjfTh05efN4QeqTEECDgQcCDgQMCBgAMBBwIOBBwIOBBwIAQcCDgQcCDgQMCBgAMBBwIOBBwIOBACDgQcCDgQcCBL3cv+8j/fv/Z/+OPnbwWH6EOR1yGHUACX/HAsB6IaKAnhMGMiPSV54HBkIislGeCQwiITIoHhkGUiDSUh4ViCxe9fP/o//PT8UhCReHDMkTGEwj5cYvERCY4JLJYzsYSSKIjEgGMUCwMmrlOij0gAOK5UGOKUiPOhDod97WmMiDIfunB0YvH714+eMLjwER0RUTh6yHiNd7+NKyMiyIciHKdkvInxaCUoi4gaH3JwjJIxRwl89KjFIuM05J1RX3LHc8cVSj0TUHGOoUHpIaAz/FiIunPsmC6dLuJoIfZjEjutuCAim2KA42iKvDd2y9sTLz6Or83dPJo4Gavm1uk0hQ8tOCY8Y2umf3p+ESxBHPloQcmYjqJyCaLGR9MnY7mLyFaCany0KKNj+V2a9UcJON6bBKPjcj2EsfiwN48mQobXfNLkQyS5NJHfNhf+JfET5EOk+JCoOXrI2JqMY/GREI5Vpcam4An2L+7FB5u3nAdDsPhIBccS23AMnlpysTGPFoUM90xfkI9gacXAPMQfo6dKK8ttw5GPauZBQYrE4Lho3ZhHBjjsHwck5sN+hFvQSRDrmUhQ82hBobYZrOLm0ULjX+2eprF5pO1WEj9zCQ+HWSnqVXxUyCymzmG/pnz3go/cmSVJWnHxj/RPa7fA4bJUeisf+pXHjjFvCsGLXn9kzSyFnq3seKEtd2bJdlLT6f5xT88vczPv4D8PIRKoN16/ecvD5Gc/IscBc1zsvvVi1m75kvaMt2ML+fen/qiY3TKR8pXMBwBeTzH2JcXrNypQkvx0yB4+bpf3rsxKSf5upXNDh3/BcNyiw7LJwjne8nE6xMp9qYuRLO5WRFoV+/Ab17YHuC9sWGqdSN25i75xmpu4pOm7NcCxIMUcBHU5XnP/2YDycnBMj6lBMIYoMXDBO2Qod1jvXbBNGdcgQ7nh9N3brhXBQvk0p1FEzK7zjmH8P9zT5apyKQ0ck2Q8nIVz7YPNhLa0tztkuLSvIXSvScbo/Pv/83VAaSmx2LHSR79uBY7tqQQV6lbAAuc4sQ3I8Ifj4fNimwquGhkGC4xb4pHCM4ADMoADMoCD3gQ49trGVjIefmlKFtfDYdawlD3MwKZVCewclBqkFUqNGnAszAK+KyuVXTMAHMuTH3IZ85Zm3tjYRp1WxRqO635YPKEY92i74CCzRM8pwdKKu21Uu7PSRAJM8yw4ehvhsMks3NjYN84OaWUOf3fLKXgBLSjUIrbhfgFbR7iFmASVn7E5jkDgZyuJK8Eq3cp7vpdguN1b6N1ZO4BzUIqmdY5N5lGnFPWyDTvniJtcfK/QkYwAaYU+JXlaWW4e7pbuuDzgZvhQs2EPWKYEHAfIC/LhaBsHo2G5FsLaOYZ+m+OyK81VRcarZJrOLyS5iJQaot2KCB+aCcVe6w8A7NTBIbm+1u34upRIqeHvHJrFKWSopJVAzUtBMvxrDik+vEoNTTIkClIRPry8SpaMm/5Wk6OnAwcqNfRbd4lW9nSKmB0IrUOGwlthbq3saH+7KVSCZOi8LKgFxykfa2NmT0YIw9BKKy4pBjLiwdHJR6wHMT0XLPjquehKsJ6R2nfmnjEWN9VNCeRqjtES5EpE34RtORarpgFwXOVjLrqvIbSpcwOREQOOIT4mIr3qXPjRHKe/v00MOOYQuamuwIiy7VEkOKYR2UHJXC0cazeseHBM83Ex9di0YMAhhIhOZw4ctSiJvqViBjgEEcmx02YeOBQoSbb7akI47CnJuiNvZji2glJhi+YqcFzEpeZu3XXhQKdqDAECDgQcCDgQcCDgQMCBgAMBBwIOBBwIAQcCDgQcCDgQcCDgQMCBgAMBBwIOhIADAQcCDrRBfwFJ+39877PsCAAAAABJRU5ErkJggg==">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAF8klEQVR42u2dwW0cMQxFN8KeAx99SQUuIF3kkELTRwoIkBJyDFJBDgGMwFjPSBqJ/CTfv3rhnRWfPskZjfTh05efN4QeqTEECDgQcCDgQMCBgAMBBwIOBBwIOBBwIAQcCDgQcCDgQMCBgAMBBwIOBBwIOBACDgQcCDgQcCBL3cv+8j/fv/Z/+OPnbwWH6EOR1yGHUACX/HAsB6IaKAnhMGMiPSV54HBkIislGeCQwiITIoHhkGUiDSUh4ViCxe9fP/o//PT8UhCReHDMkTGEwj5cYvERCY4JLJYzsYSSKIjEgGMUCwMmrlOij0gAOK5UGOKUiPOhDod97WmMiDIfunB0YvH714+eMLjwER0RUTh6yHiNd7+NKyMiyIciHKdkvInxaCUoi4gaH3JwjJIxRwl89KjFIuM05J1RX3LHc8cVSj0TUHGOoUHpIaAz/FiIunPsmC6dLuJoIfZjEjutuCAim2KA42iKvDd2y9sTLz6Or83dPJo4Gavm1uk0hQ8tOCY8Y2umf3p+ESxBHPloQcmYjqJyCaLGR9MnY7mLyFaCany0KKNj+V2a9UcJON6bBKPjcj2EsfiwN48mQobXfNLkQyS5NJHfNhf+JfET5EOk+JCoOXrI2JqMY/GREI5Vpcam4An2L+7FB5u3nAdDsPhIBccS23AMnlpysTGPFoUM90xfkI9gacXAPMQfo6dKK8ttw5GPauZBQYrE4Lho3ZhHBjjsHwck5sN+hFvQSRDrmUhQ82hBobYZrOLm0ULjX+2eprF5pO1WEj9zCQ+HWSnqVXxUyCymzmG/pnz3go/cmSVJWnHxj/RPa7fA4bJUeisf+pXHjjFvCsGLXn9kzSyFnq3seKEtd2bJdlLT6f5xT88vczPv4D8PIRKoN16/ecvD5Gc/IscBc1zsvvVi1m75kvaMt2ML+fen/qiY3TKR8pXMBwBeTzH2JcXrNypQkvx0yB4+bpf3rsxKSf5upXNDh3/BcNyiw7LJwjne8nE6xMp9qYuRLO5WRFoV+/Ab17YHuC9sWGqdSN25i75xmpu4pOm7NcCxIMUcBHU5XnP/2YDycnBMj6lBMIYoMXDBO2Qod1jvXbBNGdcgQ7nh9N3brhXBQvk0p1FEzK7zjmH8P9zT5apyKQ0ck2Q8nIVz7YPNhLa0tztkuLSvIXSvScbo/Pv/83VAaSmx2LHSR79uBY7tqQQV6lbAAuc4sQ3I8Ifj4fNimwquGhkGC4xb4pHCM4ADMoADMoCD3gQ49trGVjIefmlKFtfDYdawlD3MwKZVCewclBqkFUqNGnAszAK+KyuVXTMAHMuTH3IZ85Zm3tjYRp1WxRqO635YPKEY92i74CCzRM8pwdKKu21Uu7PSRAJM8yw4ehvhsMks3NjYN84OaWUOf3fLKXgBLSjUIrbhfgFbR7iFmASVn7E5jkDgZyuJK8Eq3cp7vpdguN1b6N1ZO4BzUIqmdY5N5lGnFPWyDTvniJtcfK/QkYwAaYU+JXlaWW4e7pbuuDzgZvhQs2EPWKYEHAfIC/LhaBsHo2G5FsLaOYZ+m+OyK81VRcarZJrOLyS5iJQaot2KCB+aCcVe6w8A7NTBIbm+1u34upRIqeHvHJrFKWSopJVAzUtBMvxrDik+vEoNTTIkClIRPry8SpaMm/5Wk6OnAwcqNfRbd4lW9nSKmB0IrUOGwlthbq3saH+7KVSCZOi8LKgFxykfa2NmT0YIw9BKKy4pBjLiwdHJR6wHMT0XLPjquehKsJ6R2nfmnjEWN9VNCeRqjtES5EpE34RtORarpgFwXOVjLrqvIbSpcwOREQOOIT4mIr3qXPjRHKe/v00MOOYQuamuwIiy7VEkOKYR2UHJXC0cazeseHBM83Ex9di0YMAhhIhOZw4ctSiJvqViBjgEEcmx02YeOBQoSbb7akI47CnJuiNvZji2glJhi+YqcFzEpeZu3XXhQKdqDAECDgQcCDgQcCDgQMCBgAMBBwIOBBwIAQcCDgQcCDgQcCDgQMCBgAMBBwIOhIADAQcCDrRBfwFJ+39877PsCAAAAABJRU5ErkJggg==">
+<style>
+:root{
+  --bg:#eef1f6; --card:#fff; --ink:#0b1220; --muted:#3b4558; --line:#9aa6b8;
+  --blue:#1d4ed8; --blue-d:#1e3a8a; --green:#15803d; --red:#b91c1c; --amber:#b45309;
+  --sel:#facc15; --r:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:20px;line-height:1.3}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font:inherit;color:inherit;touch-action:manipulation;-webkit-user-select:none;user-select:none;cursor:pointer;border:none}
+input{font:inherit;font-size:22px}
+h1,h2,h3{margin:0 0 12px}
+h2{font-size:28px} h3{font-size:23px}
+.hidden{display:none!important}
+
+/* Yläpalkki */
+#top{position:sticky;top:0;z-index:20;background:var(--blue-d);color:#fff;display:flex;align-items:center;gap:8px;padding:8px 10px;flex-wrap:wrap}
+#tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{background:#334f9e;color:#fff;min-height:58px;padding:0 18px;border-radius:12px;font-size:21px;font-weight:700}
+.tab.on{background:#fff;color:var(--blue-d)}
+#matchinfo{flex:1;min-width:160px;font-size:19px;font-weight:600;text-align:right;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+main{padding:12px}
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* Peruspainikkeet */
+.btn{min-height:62px;padding:0 22px;border-radius:12px;font-weight:700;font-size:21px;background:var(--blue);color:#fff}
+.btn.big{min-height:72px;font-size:24px}
+.btn.gray{background:#d7dde7;color:var(--ink)}
+.btn.red{background:var(--red)} .btn.green{background:var(--green)}
+.btn:active{filter:brightness(.85)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Kirjausnäkymä */
+#rec{display:grid;grid-template-columns:minmax(0,43fr) minmax(0,57fr);grid-template-areas:'left actions' 'recent actions';grid-template-rows:auto 1fr;gap:12px;align-items:start}
+#left{grid-area:left} #actions{grid-area:actions} #recent{grid-area:recent}
+#setbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+#setbar .lbl{font-size:26px;font-weight:800;min-width:110px;text-align:center}
+.sq{min-width:64px;min-height:62px;border-radius:12px;font-size:30px;font-weight:800;background:#d7dde7}
+#undo{margin-left:auto;background:var(--amber);color:#fff;min-height:62px;padding:0 22px;border-radius:12px;font-size:23px;font-weight:800}
+#players{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pl{position:relative;background:#fff;border:3px solid var(--line);border-radius:var(--r);min-height:112px;padding:6px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pl .n{font-size:44px;font-weight:900;line-height:1}
+.pl .nm{font-size:20px;font-weight:600;margin-top:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .badge{position:absolute;top:5px;right:6px;background:var(--amber);color:#fff;font-size:15px;font-weight:800;border-radius:8px;padding:2px 7px}
+.pl.on{background:var(--blue);border-color:var(--sel);box-shadow:0 0 0 4px var(--sel);color:#fff}
+#actions{position:relative}
+#actions.off .act{opacity:.35}
+#selinfo{font-size:23px;font-weight:800;min-height:62px;display:flex;align-items:center;padding:0 14px;border-radius:12px;background:#fff;border:3px dashed var(--line);margin-bottom:10px}
+#selinfo.on{border:3px solid var(--sel);background:#fffbe6}
+#selinfo.done{border:3px solid #0f5c2c;background:var(--green);color:#fff}
+.skill{display:grid;grid-template-columns:150px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.skill .lbl{font-size:20px;font-weight:800}
+.grades{display:grid;gap:8px}
+.act{min-height:68px;border-radius:12px;font-size:30px;font-weight:900;background:#dbe6ff;color:var(--blue-d);border:3px solid #9db4f0}
+.skill.P .act{background:#fdecc8;color:#7c2d12;border-color:#e3b26a}
+.skill.P.dim{opacity:.55}
+.skill.P.hi .lbl::after{content:" ★";color:var(--amber)}
+.secthead{font-size:18px;font-weight:800;color:var(--muted);margin:12px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.multi{display:grid;gap:8px}
+.multi.three{grid-template-columns:repeat(3,1fr)}
+.multi.four{grid-template-columns:repeat(4,1fr)}
+.act.pt{background:var(--green);color:#fff;border-color:#0f5c2c;font-size:20px;line-height:1.1;padding:4px;-webkit-hyphens:manual;hyphens:manual}
+.act.er{background:var(--red);color:#fff;border-color:#7f1515;font-size:19px;line-height:1.1;padding:4px;-webkit-hyphens:manual;hyphens:manual}
+.act small{display:block;font-size:17px;font-weight:700;opacity:.95}
+#recent{background:#fff;border-radius:12px;padding:8px 12px;font-size:18px}
+#recent div{padding:3px 0;border-bottom:1px solid #e3e7ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#recent div:last-child{border:none}
+
+/* Taulukot */
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:18px;background:#fff}
+th,td{border:1px solid #c3cad6;padding:6px 6px;text-align:center;vertical-align:middle}
+th{background:#e4e9f2;font-size:16px;line-height:1.15}
+th.grp{font-size:17px}
+td.nm{text-align:left;font-weight:700;white-space:nowrap}
+td .ka{display:block;font-size:15px;color:var(--muted)}
+tr.tot td{background:#fff6d6;font-weight:800;border-top:3px solid #333}
+td.pos{color:var(--green);font-weight:800} td.neg{color:var(--red);font-weight:800}
+td.net{font-size:22px;font-weight:900}
+.zero{color:#a3abb8}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seg button{min-height:58px;padding:0 20px;border-radius:12px;background:#d7dde7;font-weight:700;font-size:21px}
+.seg button.on{background:var(--blue);color:#fff}
+
+/* Loki */
+.logrow{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid #dde2ea;font-size:21px}
+.logrow .t{color:var(--muted);font-size:17px;min-width:110px}
+.logrow .what{flex:1}
+.logrow .del{min-height:58px;padding:0 18px;border-radius:12px;background:#fde2e2;color:var(--red);font-weight:800;border:2px solid var(--red)}
+.tag{display:inline-block;padding:2px 10px;border-radius:8px;font-weight:800;font-size:18px;margin-left:6px}
+.tag.p{background:#dcfce7;color:var(--green)} .tag.m{background:#fee2e2;color:var(--red)} .tag.g{background:#dbe6ff;color:var(--blue-d)}
+
+/* Pelaajat */
+.prow{display:grid;grid-template-columns:110px 1fr 190px 70px;gap:10px;align-items:center;margin-bottom:10px}
+.prow input[type=text],.prow input[type=number],.field input{width:100%;min-height:62px;border:3px solid var(--line);border-radius:12px;padding:0 14px;background:#fff;color:var(--ink)}
+.prow input:focus,.field input:focus{outline:none;border-color:var(--blue)}
+.chk{display:flex;align-items:center;gap:10px;min-height:62px;padding:0 12px;border-radius:12px;background:#f3f4f6;border:3px solid var(--line);font-weight:700}
+.chk input{width:34px;height:34px;accent-color:var(--amber)}
+.chk.on{background:#fdecc8;border-color:var(--amber)}
+.x{min-height:62px;border-radius:12px;background:#fde2e2;color:var(--red);font-size:30px;font-weight:900;border:2px solid var(--red)}
+.field{margin-bottom:12px} .field label{display:block;font-weight:700;margin-bottom:6px}
+.help{color:var(--muted);font-size:18px;margin:6px 0 12px}
+
+/* Ottelut */
+.mrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #dde2ea;flex-wrap:wrap}
+.mrow .info{flex:1;min-width:240px}
+.mrow .info b{font-size:23px}
+.mrow.cur{background:#fffbe6}
+.empty{padding:26px;text-align:center;color:var(--muted);font-size:22px}
+
+/* Ilmoitus ja dialogi */
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--green);color:#fff;font-size:26px;font-weight:800;padding:18px 30px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:50;opacity:0;pointer-events:none;transition:opacity .15s;max-width:92vw;text-align:center}
+#toast.show{opacity:1} #toast.warn{background:var(--amber)} #toast.bad{background:var(--red)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modal .box{background:#fff;border-radius:18px;padding:24px;max-width:560px;width:100%;font-size:23px}
+#modal .row{justify-content:flex-end;margin-top:20px}
+
+@media (max-width:900px){
+  #rec{grid-template-columns:1fr;grid-template-areas:'left' 'actions' 'recent';grid-template-rows:auto}
+  #players{grid-template-columns:repeat(4,1fr)}
+  .pl{min-height:96px}
+  .prow{grid-template-columns:90px 1fr 160px 64px}
+}
+@media (orientation:landscape) and (max-height:900px){
+  .pl{min-height:104px}
+}
+</style>
+</head>
+<body>
+<header id="top">
+  <nav id="tabs">
+    <button class="tab" data-v="kirjaa">Kirjaa</button>
+    <button class="tab" data-v="yhteenveto">Yhteenveto</button>
+    <button class="tab" data-v="loki">Loki</button>
+    <button class="tab" data-v="ottelut">Ottelut</button>
+    <button class="tab" data-v="pelaajat">Pelaajat</button>
+  </nav>
+  <div id="matchinfo"></div>
+</header>
+<main id="main"></main>
+<div id="toast"></div>
+<div id="modal" class="hidden"><div class="box"><div id="mtext"></div><div class="row"><button class="btn gray" id="mno">Peruuta</button><button class="btn red" id="myes">OK</button></div></div></div>
+
+<script>
+'use strict';
+// ---------- Määritykset ----------
+var KEY = 'lentopallo_tilastot_v1';
+var SKILLS = [
+  {k:'V', name:'Vastaanotto', max:4, plural:'Vastaanotot'},
+  {k:'H', name:'Hyökkäys', max:3, plural:'Hyökkäykset'},
+  {k:'S', name:'Syöttö', max:4, plural:'Syötöt'},
+  {k:'P', name:'Passi', max:2, plural:'Passit'}
+];
+var POINTS = [
+  {k:'HP', name:'Hyökkäyspiste', label:'Hyökkäys&shy;piste', short:'Hyökk.&shy;piste', plural:'Hyökkäyspisteet'},
+  {k:'TP', name:'Torjuntapiste', label:'Torjunta&shy;piste', short:'Torjunta&shy;piste', plural:'Torjuntapisteet'},
+  {k:'AS', name:'Ässä', label:'Ässä', short:'Ässä', plural:'Ässät'}
+];
+var ERRORS = [
+  {k:'VV', name:'Verkkovirhe', label:'Verkko&shy;virhe', short:'Verkko&shy;virhe', plural:'Verkkovirheet'},
+  {k:'VOV', name:'Vastaanottovirhe', label:'Vastaan&shy;otto&shy;virhe', short:'Vast.otto&shy;virhe', plural:'Vastaanottovirheet'},
+  {k:'SV', name:'Syöttövirhe', label:'Syöttö&shy;virhe', short:'Syöttö&shy;virhe', plural:'Syöttövirheet'},
+  {k:'HV', name:'Hyökkäysvirhe', label:'Hyökkäys&shy;virhe', short:'Hyökk.&shy;virhe', plural:'Hyökkäysvirheet'}
+];
+var BYKEY = {};
+SKILLS.forEach(function(s){ BYKEY[s.k] = {kind:'g', d:s}; });
+POINTS.forEach(function(s){ BYKEY[s.k] = {kind:'p', d:s}; });
+ERRORS.forEach(function(s){ BYKEY[s.k] = {kind:'e', d:s}; });
+var MAXP = 12;
+
+// ---------- Tila ----------
+var S = load();
+var view = null, selPid = null, sumSet = 'all';
+
+function blank(){ return {roster:[], matches:[], currentId:null}; }
+function load(){
+  try { var o = JSON.parse(localStorage.getItem(KEY)); if (o && Array.isArray(o.roster) && Array.isArray(o.matches)) return o; } catch(e) {}
+  return blank();
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e){ toast('Tallennus epäonnistui! Muisti täynnä?', 'bad'); }
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function cur(){ for (var i=0;i<S.matches.length;i++) if (S.matches[i].id === S.currentId) return S.matches[i]; return null; }
+function today(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function pad(n){ return (n<10?'0':'')+n; }
+function fiDate(iso){ if(!iso) return ''; var p=iso.split('-'); return p.length===3 ? (+p[2])+'.'+(+p[1])+'.'+p[0] : iso; }
+function fiTime(ts){ var d=new Date(ts); return pad(d.getHours())+'.'+pad(d.getMinutes())+'.'+pad(d.getSeconds()); }
+function localDate(ts){ var d=new Date(ts); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); }
+function dec(x){ return x.toFixed(2).replace('.', ','); }
+function sortedRoster(){ return S.roster.slice().sort(function(a,b){ return (parseInt(a.num,10)||999) - (parseInt(b.num,10)||999) || String(a.name).localeCompare(String(b.name),'fi'); }); }
+function pById(pid){ for (var i=0;i<S.roster.length;i++) if (S.roster[i].id===pid) return S.roster[i]; return null; }
+function evLabel(e){
+  var b = BYKEY[e.type]; if(!b) return e.type;
+  if (b.kind==='g') return b.d.name + ' ' + e.g;
+  return b.d.name + (b.kind==='p' ? ' +1' : ' −1');
+}
+function evTag(e){
+  var b = BYKEY[e.type]; if(!b) return '';
+  if (b.kind==='g') return '<span class="tag g">'+esc(b.d.name)+' '+e.g+'</span>';
+  return '<span class="tag '+(b.kind==='p'?'p':'m')+'">'+esc(b.d.name)+(b.kind==='p'?' +1':' −1')+'</span>';
+}
+function pLabel(num, name){ return (num!==''&&num!=null ? '#'+num+' ' : '') + (name||''); }
+
+// ---------- Yleiset UI-apurit ----------
+var tt = null;
+function toast(msg, cls){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + (cls||'');
+  clearTimeout(tt); tt = setTimeout(function(){ t.className = ''; }, 1400);
+}
+function ask(msg, yesLabel, cb){
+  var m = document.getElementById('modal');
+  document.getElementById('mtext').textContent = msg;
+  var y = document.getElementById('myes'); y.textContent = yesLabel || 'OK';
+  m.classList.remove('hidden');
+  document.getElementById('mno').onclick = function(){ m.classList.add('hidden'); };
+  y.onclick = function(){ m.classList.add('hidden'); cb(); };
+}
+
+// ---------- Navigointi ----------
+document.getElementById('tabs').addEventListener('click', function(ev){
+  var b = ev.target.closest('.tab'); if (b) go(b.dataset.v);
+});
+function go(v){
+  view = v;
+  if (v !== 'kirjaa') selPid = null;
+  var tabs = document.querySelectorAll('.tab');
+  for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].dataset.v === v);
+  var m = cur();
+  document.getElementById('matchinfo').textContent = m ? ('vs ' + (m.opponent||'?') + ' · ' + fiDate(m.date)) : 'Ei valittua ottelua';
+  ({kirjaa:renderRec, yhteenveto:renderSum, loki:renderLog, ottelut:renderMatches, pelaajat:renderRoster}[v])();
+  window.scrollTo(0,0);
+}
+
+// ---------- Kirjaus ----------
+function renderRec(){
+  var main = document.getElementById('main'), m = cur();
+  if (!S.roster.length){ main.innerHTML = '<div class="card empty">Lisää ensin pelaajat.<br><br><button class="btn big" onclick="go(\'pelaajat\')">Lisää pelaajat</button></div>'; return; }
+  if (!m){ main.innerHTML = '<div class="card empty">Aloita ensin uusi ottelu.<br><br><button class="btn big" onclick="go(\'ottelut\')">Uusi ottelu</button></div>'; return; }
+  var h = '<div id="rec"><section id="left"><div id="setbar">'
+    + '<button class="sq" id="setminus" aria-label="Edellinen erä">−</button><div class="lbl" id="setlbl">Erä '+m.set+'</div>'
+    + '<button class="sq" id="setplus" aria-label="Seuraava erä">+</button>'
+    + '<button id="undo">↶ Kumoa</button></div><div id="players">';
+  sortedRoster().forEach(function(p){
+    h += '<button class="pl'+(p.id===selPid?' on':'')+'" data-pid="'+p.id+'">'+(p.setter?'<span class="badge">PASSARI</span>':'')
+      + '<span class="n">'+esc(p.num)+'</span><span class="nm">'+esc(p.name)+'</span></button>';
+  });
+  h += '</div></section><div id="recent"></div><section id="actions"><div id="selinfo"></div>';
+  SKILLS.forEach(function(s){
+    h += '<div class="skill '+s.k+'"><div class="lbl">'+s.name+'</div><div class="grades" style="grid-template-columns:repeat('+s.max+',1fr)">';
+    for (var g=1; g<=s.max; g++) h += '<button class="act" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+'">'+g+'</button>';
+    h += '</div></div>';
+  });
+  h += '<div class="secthead">Pisteet (+1)</div><div class="multi three">';
+  POINTS.forEach(function(s){ h += '<button class="act pt" data-t="'+s.k+'">'+s.label+'<small>+1</small></button>'; });
+  h += '</div><div class="secthead">Virheet (−1)</div><div class="multi four">';
+  ERRORS.forEach(function(s){ h += '<button class="act er" data-t="'+s.k+'">'+s.label+'<small>−1</small></button>'; });
+  h += '</div></section></div>';
+  main.innerHTML = h;
+  document.getElementById('players').onclick = function(ev){
+    var b = ev.target.closest('.pl'); if (!b) return;
+    selPid = (selPid === b.dataset.pid) ? null : b.dataset.pid;
+    updSel();
+  };
+  document.getElementById('actions').onclick = function(ev){
+    var b = ev.target.closest('.act'); if (!b) return;
+    if (!selPid){ toast('Valitse ensin pelaaja', 'warn'); return; }
+    record(b.dataset.t, b.dataset.g ? +b.dataset.g : null);
+  };
+  document.getElementById('undo').onclick = undo;
+  document.getElementById('setminus').onclick = function(){ setSet(-1); };
+  document.getElementById('setplus').onclick = function(){ setSet(1); };
+  updSel(); updRecent();
+}
+var ft = null;
+function flash(msg){
+  var si = document.getElementById('selinfo'); if (!si) return;
+  clearTimeout(ft); si.className = 'done'; si.textContent = msg;
+  ft = setTimeout(function(){ ft = null; if (document.getElementById('selinfo')) updSel(); }, 1600);
+}
+function updSel(){
+  if (ft){ clearTimeout(ft); ft = null; }
+  var pls = document.querySelectorAll('.pl');
+  for (var i=0;i<pls.length;i++) pls[i].classList.toggle('on', pls[i].dataset.pid === selPid);
+  var p = selPid ? pById(selPid) : null;
+  var si = document.getElementById('selinfo');
+  si.classList.toggle('on', !!p);
+  si.textContent = p ? ('Valittu: ' + pLabel(p.num, p.name) + (p.setter ? ' (passari)' : '')) : '1. Valitse pelaaja  →  2. Valitse suoritus';
+  document.getElementById('actions').classList.toggle('off', !p);
+  var ps = document.querySelector('.skill.P');
+  if (ps){ ps.classList.toggle('hi', !!(p && p.setter)); ps.classList.toggle('dim', !!(p && !p.setter)); }
+}
+function updRecent(){
+  var m = cur(), el = document.getElementById('recent'); if (!m || !el) return;
+  var ev = m.events.slice(-4).reverse();
+  el.innerHTML = '<b>Viimeisimmät:</b>' + (ev.length ? ev.map(function(e){
+    return '<div>Erä '+e.set+' · '+esc(pLabel(e.num,e.name))+' · '+esc(evLabel(e))+'</div>'; }).join('') : '<div class="zero">Ei vielä kirjauksia</div>');
+}
+function record(type, g){
+  var m = cur(), p = pById(selPid); if (!m || !p) return;
+  var e = {id:uid(), ts:Date.now(), set:m.set, pid:p.id, num:p.num, name:p.name, type:type, g:g};
+  m.events.push(e);
+  syncMatchPlayer(m, p);
+  save();
+  selPid = null; updSel(); updRecent();
+  flash('✓ Kirjattu: ' + pLabel(p.num, p.name) + ' – ' + evLabel(e));
+}
+function undo(){
+  var m = cur(); if (!m || !m.events.length){ toast('Ei kumottavaa', 'warn'); return; }
+  var e = m.events.pop(); save();
+  toast('Kumottu: ' + pLabel(e.num, e.name) + ' – ' + evLabel(e), 'warn');
+  updRecent();
+}
+function setSet(d){
+  var m = cur(); if (!m) return;
+  m.set = Math.max(1, Math.min(9, m.set + d)); save();
+  document.getElementById('setlbl').textContent = 'Erä ' + m.set;
+  toast('Erä ' + m.set);
+}
+function syncMatchPlayer(m, p){
+  m.players = m.players || [];
+  for (var i=0;i<m.players.length;i++) if (m.players[i].id===p.id){ m.players[i].num=p.num; m.players[i].name=p.name; m.players[i].setter=!!p.setter; return; }
+  m.players.push({id:p.id, num:p.num, name:p.name, setter:!!p.setter});
+}
+
+// ---------- Laskenta ----------
+function emptyStat(){
+  var o = {plus:0, minus:0};
+  SKILLS.forEach(function(s){ o[s.k] = {n:0, sum:0, dist:new Array(s.max+1).fill(0)}; });
+  POINTS.concat(ERRORS).forEach(function(s){ o[s.k] = 0; });
+  return o;
+}
+function addEv(o, e){
+  var b = BYKEY[e.type]; if (!b) return;
+  if (b.kind==='g'){ var x=o[e.type]; x.n++; x.sum+=e.g; if (e.g < x.dist.length) x.dist[e.g]++; }
+  else { o[e.type]++; if (b.kind==='p') o.plus++; else o.minus++; }
+}
+function summarize(m, set){
+  var rows = {}, order = [], team = emptyStat();
+  (m.players||[]).forEach(function(p){ if(!rows[p.id]){ rows[p.id] = {p:{id:p.id,num:p.num,name:p.name}, s:emptyStat()}; order.push(p.id); } });
+  m.events.forEach(function(e){
+    if (set !== 'all' && e.set !== set) return;
+    if (!rows[e.pid]){ rows[e.pid] = {p:{id:e.pid,num:e.num,name:e.name}, s:emptyStat()}; order.push(e.pid); }
+    addEv(rows[e.pid].s, e); addEv(team, e);
+  });
+  var list = order.map(function(id){ return rows[id]; });
+  list.sort(function(a,b){ return (parseInt(a.p.num,10)||999)-(parseInt(b.p.num,10)||999); });
+  return {rows:list, team:team};
+}
+function setsOf(m){
+  var mx = m.set || 1; m.events.forEach(function(e){ if (e.set > mx) mx = e.set; });
+  var a=[]; for (var i=1;i<=mx;i++) a.push(i); return a;
+}
+
+// ---------- Yhteenveto ----------
+function cellSkill(x){
+  if (!x.n) return '<td class="zero">–</td>';
+  return '<td><b>'+x.n+'</b> kpl<span class="ka">ka '+dec(x.sum/x.n)+'</span></td>';
+}
+function cellN(n, cls){ return n ? '<td class="'+cls+'">'+n+'</td>' : '<td class="zero">0</td>'; }
+function statCells(s){
+  var h = '';
+  SKILLS.forEach(function(k){ h += cellSkill(s[k.k]); });
+  POINTS.forEach(function(k){ h += cellN(s[k.k], 'pos'); });
+  ERRORS.forEach(function(k){ h += cellN(s[k.k], 'neg'); });
+  var net = s.plus - s.minus;
+  h += '<td class="pos">'+s.plus+'</td><td class="neg">'+s.minus+'</td><td class="net '+(net>0?'pos':net<0?'neg':'')+'">'+(net>0?'+':'')+net+'</td>';
+  return h;
+}
+function renderSum(){
+  var main = document.getElementById('main'), m = cur();
+  if (!m){ main.innerHTML = '<div class="card empty">Ei valittua ottelua. Valitse ottelu Ottelut-välilehdeltä.</div>'; return; }
+  var sets = setsOf(m);
+  if (sumSet !== 'all' && sets.indexOf(sumSet) < 0) sumSet = 'all';
+  var sm = summarize(m, sumSet);
+  var h = '<div class="card"><h2>Yhteenveto: vs '+esc(m.opponent||'?')+' · '+fiDate(m.date)+'</h2><div class="seg" id="sets">'
+    + '<button data-s="all" class="'+(sumSet==='all'?'on':'')+'">Koko ottelu</button>';
+  sets.forEach(function(n){ h += '<button data-s="'+n+'" class="'+(sumSet===n?'on':'')+'">Erä '+n+'</button>'; });
+  h += '</div><div class="tablewrap"><table id="sumtable"><thead><tr><th rowspan="2">Nro</th><th rowspan="2">Nimi</th>'
+    + '<th colspan="4" class="grp">Suoritukset (kpl ja keskiarvo)</th><th colspan="3" class="grp">Pisteet +1</th><th colspan="4" class="grp">Virheet −1</th><th colspan="3" class="grp">Yhteensä</th></tr><tr>';
+  SKILLS.forEach(function(s){ h += '<th>'+s.name+'<br>1–'+s.max+'</th>'; });
+  POINTS.concat(ERRORS).forEach(function(s){ h += '<th>'+s.short+'</th>'; });
+  h += '<th>Plus</th><th>Miinus</th><th>Netto</th></tr></thead><tbody>';
+  if (!sm.rows.length) h += '<tr><td colspan="16" class="zero">Ei kirjauksia</td></tr>';
+  sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
+  h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
+    + '<p class="help">Keskiarvo (ka) lasketaan annetuista arvosanoista. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + '<div class="card"><h3>Vienti</h3><div class="row">'
+    + '<button class="btn" id="csvsum">⬇ Yhteenveto CSV</button>'
+    + '<button class="btn" id="csvev">⬇ Tapahtumat CSV</button>'
+    + '<button class="btn green" id="share">Jaa…</button>'
+    + '<button class="btn gray" id="copy">Kopioi leikepöydälle</button></div>'
+    + '<p class="help">CSV-tiedostot aukeavat Excelissä ja Numbersissa (erotin puolipiste).</p></div>';
+  main.innerHTML = h;
+  document.getElementById('sets').onclick = function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    sumSet = b.dataset.s === 'all' ? 'all' : +b.dataset.s; renderSum();
+  };
+  document.getElementById('csvsum').onclick = function(){ download(fname(m,'yhteenveto'), csvSummary(m)); };
+  document.getElementById('csvev').onclick = function(){ download(fname(m,'tapahtumat'), csvEvents(m)); };
+  document.getElementById('share').onclick = function(){ shareMatch(m); };
+  document.getElementById('copy').onclick = function(){ copyText(csvSummary(m, '\t')); };
+}
+
+// ---------- CSV ----------
+function q(v, sep){
+  var s = String(v == null ? '' : v);
+  return (s.indexOf(sep) >= 0 || /["\n\r]/.test(s)) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+function line(arr, sep){ return arr.map(function(v){ return q(v, sep); }).join(sep); }
+function csvSummary(m, sep){
+  sep = sep || ';';
+  var head = ['Ottelu','Päivä','Erä','Nro','Nimi'];
+  SKILLS.forEach(function(s){ head.push(s.plural+' kpl', s.name+' ka'); for (var g=1; g<=s.max; g++) head.push(s.name+' '+g); });
+  POINTS.concat(ERRORS).forEach(function(s){ head.push(s.plural); });
+  head.push('Plussat','Miinukset','Netto');
+  var out = [line(head, sep)];
+  ['all'].concat(setsOf(m)).forEach(function(set){
+    var sm = summarize(m, set);
+    var rows = sm.rows.map(function(r){ return [r.p.num, r.p.name, r.s]; });
+    rows.push(['', 'Joukkue yhteensä', sm.team]);
+    rows.forEach(function(r){
+      var s = r[2], a = ['vs ' + (m.opponent||''), fiDate(m.date), set==='all' ? 'Koko ottelu' : 'Erä '+set, r[0], r[1]];
+      SKILLS.forEach(function(k){ var x = s[k.k]; a.push(x.n, x.n ? dec(x.sum/x.n) : ''); for (var g=1; g<=k.max; g++) a.push(x.dist[g]); });
+      POINTS.concat(ERRORS).forEach(function(k){ a.push(s[k.k]); });
+      a.push(s.plus, s.minus, s.plus - s.minus);
+      out.push(line(a, sep));
+    });
+  });
+  return out.join('\r\n');
+}
+function csvEvents(m){
+  var out = [line(['Järjestys','Aika','Erä','Nro','Nimi','Suoritus','Arvosana','Pisteet'], ';')];
+  m.events.forEach(function(e, i){
+    var b = BYKEY[e.type] || {kind:'?', d:{name:e.type}};
+    out.push(line([i+1, localDate(e.ts) + ' ' + fiTime(e.ts), e.set, e.num, e.name, b.d.name, b.kind==='g' ? e.g : '', b.kind==='p' ? '+1' : b.kind==='e' ? '-1' : ''], ';'));
+  });
+  return out.join('\r\n');
+}
+function fname(m, what){
+  var o = String(m.opponent||'ottelu').toLowerCase().replace(/[åä]/g,'a').replace(/ö/g,'o').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'ottelu';
+  return 'lentopallo_' + (m.date||'') + '_' + o + '_' + what + '.csv';
+}
+function csvBlob(text){ return new Blob(['\ufeff' + text], {type:'text/csv;charset=utf-8'}); }
+function download(name, text, type){
+  var blob = type ? new Blob([text], {type:type}) : csvBlob(text);
+  var url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 4000);
+  toast('Tiedosto ladattu: ' + name);
+}
+function shareMatch(m){
+  try {
+    var files = [new File([csvBlob(csvSummary(m))], fname(m,'yhteenveto'), {type:'text/csv'}),
+                 new File([csvBlob(csvEvents(m))], fname(m,'tapahtumat'), {type:'text/csv'})];
+    if (navigator.canShare && navigator.canShare({files:files})){
+      navigator.share({files:files, title:'Lentopallotilastot vs ' + (m.opponent||'')}).catch(function(){});
+      return;
+    }
+    if (navigator.share){ navigator.share({title:'Lentopallotilastot', text:csvSummary(m, '\t')}).catch(function(){}); return; }
+  } catch(e) {}
+  copyText(csvSummary(m, '\t'));
+}
+function copyText(t){
+  function fallback(){
+    var ta = document.createElement('textarea'); ta.value = t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch(e) {}
+    ta.remove(); toast(ok ? 'Kopioitu leikepöydälle' : 'Kopiointi ei onnistunut', ok ? '' : 'bad');
+  }
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(function(){ toast('Kopioitu leikepöydälle'); }, fallback);
+  else fallback();
+}
+
+// ---------- Loki ----------
+function renderLog(){
+  var main = document.getElementById('main'), m = cur();
+  if (!m){ main.innerHTML = '<div class="card empty">Ei valittua ottelua.</div>'; return; }
+  var h = '<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Loki ('+m.events.length+' kirjausta)</h2>'
+    + '<button class="btn" id="logundo" style="background:var(--amber)">↶ Kumoa viimeisin</button></div><p class="help">Uusin ylimpänä. Poista yksittäinen kirjaus Poista-painikkeella.</p><div id="loglist">';
+  if (!m.events.length) h += '<div class="empty">Ei kirjauksia</div>';
+  for (var i = m.events.length-1; i >= 0; i--){
+    var e = m.events[i];
+    h += '<div class="logrow"><span class="t">'+fiTime(e.ts)+'<br>Erä '+e.set+'</span><span class="what"><b>'+esc(pLabel(e.num,e.name))+'</b> '+evTag(e)+'</span>'
+      + '<button class="del" data-id="'+e.id+'">Poista</button></div>';
+  }
+  main.innerHTML = h + '</div></div>';
+  document.getElementById('logundo').onclick = function(){ undo(); renderLog(); };
+  document.getElementById('loglist').onclick = function(ev){
+    var b = ev.target.closest('.del'); if (!b) return;
+    var idx = -1; m.events.forEach(function(e,i){ if (e.id === b.dataset.id) idx = i; });
+    if (idx < 0) return;
+    var e = m.events[idx];
+    ask('Poistetaanko kirjaus: ' + pLabel(e.num,e.name) + ' – ' + evLabel(e) + '?', 'Poista', function(){
+      m.events.splice(idx, 1); save(); toast('Kirjaus poistettu', 'warn'); renderLog();
+    });
+  };
+}
+
+// ---------- Pelaajat ----------
+function renderRoster(){
+  var main = document.getElementById('main');
+  var h = '<div class="card"><h2>Pelaajat ('+S.roster.length+'/'+MAXP+')</h2><p class="help">Muutokset tallentuvat automaattisesti. Rastita passarit, niin passi-rivi korostuu heille.</p>'
+    + '<div class="prow" style="font-weight:800;font-size:18px;color:var(--muted)"><div>Numero</div><div>Nimi</div><div>Passari</div><div></div></div><div id="plist">';
+  S.roster.forEach(function(p){
+    h += '<div class="prow" data-id="'+p.id+'"><input type="number" inputmode="numeric" min="0" max="99" class="pnum" value="'+esc(p.num)+'" aria-label="Pelinumero">'
+      + '<input type="text" class="pname" value="'+esc(p.name)+'" placeholder="Nimi" autocomplete="off" aria-label="Nimi">'
+      + '<label class="chk'+(p.setter?' on':'')+'"><input type="checkbox" class="pset"'+(p.setter?' checked':'')+'> Passari</label>'
+      + '<button class="x" aria-label="Poista pelaaja">×</button></div>';
+  });
+  h += '</div><div class="row" style="margin-top:14px"><button class="btn big green" id="addp"'+(S.roster.length>=MAXP?' disabled style="opacity:.4"':'')+'>+ Lisää pelaaja</button>'
+    + '<button class="btn big" id="todone">Valmis</button></div></div>';
+  main.innerHTML = h;
+  var list = document.getElementById('plist');
+  function rowP(el){ var r = el.closest('.prow'); return r ? pById(r.dataset.id) : null; }
+  list.addEventListener('input', function(ev){
+    var p = rowP(ev.target); if (!p) return;
+    if (ev.target.classList.contains('pnum')) p.num = ev.target.value.replace(/[^0-9]/g,'').slice(0,3);
+    if (ev.target.classList.contains('pname')) p.name = ev.target.value.slice(0,30);
+    if (ev.target.classList.contains('pset')){ p.setter = ev.target.checked; ev.target.parentNode.classList.toggle('on', p.setter); }
+    var m = cur(); if (m) syncMatchPlayerIfPresent(m, p);
+    save();
+  });
+  list.addEventListener('change', function(ev){
+    if (!ev.target.classList.contains('pset')) return;
+    var p = rowP(ev.target); if (!p) return;
+    p.setter = ev.target.checked; ev.target.parentNode.classList.toggle('on', p.setter); save();
+  });
+  list.addEventListener('click', function(ev){
+    if (!ev.target.classList.contains('x')) return;
+    var p = rowP(ev.target); if (!p) return;
+    ask('Poistetaanko pelaaja ' + pLabel(p.num, p.name || '(nimetön)') + '? Aiemmat tilastot säilyvät.', 'Poista', function(){
+      S.roster = S.roster.filter(function(x){ return x.id !== p.id; }); save(); renderRoster();
+    });
+  });
+  document.getElementById('addp').onclick = function(){
+    if (S.roster.length >= MAXP) return;
+    var p = {id:uid(), num:'', name:'', setter:false}; S.roster.push(p); save(); renderRoster();
+    var ins = document.querySelectorAll('.prow[data-id="'+p.id+'"] .pnum'); if (ins[0]) ins[0].focus();
+  };
+  document.getElementById('todone').onclick = function(){
+    var empty = S.roster.filter(function(p){ return !p.name && !p.num; });
+    if (empty.length){ S.roster = S.roster.filter(function(p){ return p.name || p.num; }); save(); }
+    go(cur() ? 'kirjaa' : 'ottelut');
+  };
+}
+function syncMatchPlayerIfPresent(m, p){
+  (m.players||[]).forEach(function(x){ if (x.id===p.id){ x.num=p.num; x.name=p.name; x.setter=!!p.setter; } });
+}
+
+// ---------- Ottelut ----------
+function renderMatches(){
+  var main = document.getElementById('main');
+  var h = '<div class="card"><h2>Uusi ottelu</h2><div class="row" style="align-items:flex-end">'
+    + '<div class="field" style="flex:2;min-width:260px"><label for="opp">Vastustaja</label><input type="text" id="opp" placeholder="esim. Kisa-Veikot" autocomplete="off"></div>'
+    + '<div class="field" style="flex:1;min-width:200px"><label for="mdate">Päivämäärä</label><input type="date" id="mdate" value="'+today()+'"></div>'
+    + '<div class="field"><button class="btn big green" id="newm">Aloita ottelu</button></div></div>'
+    + (S.roster.length ? '' : '<p class="help" style="color:var(--red)">Lisää ensin pelaajat Pelaajat-välilehdellä.</p>') + '</div>'
+    + '<div class="card"><h2>Tallennetut ottelut</h2><div id="mlist">';
+  var ms = S.matches.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || b.created - a.created; });
+  if (!ms.length) h += '<div class="empty">Ei vielä otteluita</div>';
+  ms.forEach(function(m){
+    h += '<div class="mrow'+(m.id===S.currentId?' cur':'')+'" data-id="'+m.id+'"><div class="info"><b>vs '+esc(m.opponent||'?')+'</b><br>'+fiDate(m.date)
+      + ' · ' + m.events.length + ' kirjausta · ' + setsOf(m).length + ' erää' + (m.id===S.currentId?' · <b>valittu</b>':'') + '</div>'
+      + '<button class="btn" data-a="sum">Yhteenveto</button><button class="btn gray" data-a="rec">Jatka kirjaamista</button>'
+      + '<button class="btn red" data-a="del">Poista</button></div>';
+  });
+  h += '</div></div><div class="card"><h3>Varmuuskopio</h3><p class="help">Tallenna kaikki tiedot (pelaajat ja ottelut) tiedostoksi tai palauta aiempi varmuuskopio.</p><div class="row">'
+    + '<button class="btn gray" id="bk">Tallenna varmuuskopio</button><button class="btn gray" id="rs">Palauta varmuuskopio</button>'
+    + '<input type="file" id="rsfile" accept=".json,application/json" class="hidden"></div></div>';
+  main.innerHTML = h;
+  document.getElementById('newm').onclick = function(){
+    if (!S.roster.length){ toast('Lisää ensin pelaajat', 'warn'); go('pelaajat'); return; }
+    var opp = document.getElementById('opp').value.trim();
+    if (!opp){ toast('Kirjoita vastustajan nimi', 'warn'); document.getElementById('opp').focus(); return; }
+    var m = {id:uid(), opponent:opp.slice(0,40), date:document.getElementById('mdate').value || today(), created:Date.now(), set:1, events:[],
+             players:S.roster.map(function(p){ return {id:p.id, num:p.num, name:p.name, setter:!!p.setter}; })};
+    S.matches.push(m); S.currentId = m.id; save(); sumSet = 'all';
+    toast('Ottelu aloitettu: vs ' + m.opponent); go('kirjaa');
+  };
+  document.getElementById('mlist').onclick = function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    var id = b.closest('.mrow').dataset.id, m = S.matches.filter(function(x){ return x.id===id; })[0]; if (!m) return;
+    if (b.dataset.a === 'sum'){ S.currentId = id; save(); sumSet = 'all'; go('yhteenveto'); }
+    else if (b.dataset.a === 'rec'){ S.currentId = id; save(); go('kirjaa'); }
+    else if (b.dataset.a === 'del') ask('Poistetaanko ottelu vs ' + (m.opponent||'?') + ' (' + fiDate(m.date) + ') ja kaikki sen tilastot?', 'Poista', function(){
+      S.matches = S.matches.filter(function(x){ return x.id !== id; });
+      if (S.currentId === id) S.currentId = null;
+      save(); go('ottelut');
+    });
+  };
+  document.getElementById('bk').onclick = function(){ download('lentopallo_varmuuskopio_' + today() + '.json', JSON.stringify(S, null, 1), 'application/json'); };
+  document.getElementById('rs').onclick = function(){ document.getElementById('rsfile').click(); };
+  document.getElementById('rsfile').onchange = function(ev){
+    var f = ev.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try {
+        var o = JSON.parse(rd.result);
+        if (!o || !Array.isArray(o.roster) || !Array.isArray(o.matches)) throw 0;
+        ask('Korvataanko nykyiset tiedot varmuuskopiolla (' + o.matches.length + ' ottelua)?', 'Palauta', function(){ S = o; save(); toast('Varmuuskopio palautettu'); go('ottelut'); });
+      } catch(e){ toast('Virheellinen tiedosto', 'bad'); }
+    };
+    rd.readAsText(f);
+  };
+}
+
+// ---------- Käynnistys ----------
+go(!S.roster.length ? 'pelaajat' : (cur() ? 'kirjaa' : 'ottelut'));
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>
