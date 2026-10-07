@@ -1,6 +1,6 @@
 // Valinnainen offline-välimuisti: verkko ensin, välimuisti varalla.
 // Nosta versionumeroa aina, kun index.html päivittyy.
-var C = 'lentopallo-v5';
+var C = 'lentopallo-v6';
 self.addEventListener('install', function(e){
   self.skipWaiting();
   e.waitUntil(caches.open(C).then(function(c){ return c.addAll(['./', './index.html']); }));
