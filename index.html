@@ -65,7 +65,8 @@ main{padding:12px}
 #selinfo.on{border:3px solid var(--sel);background:#fffbe6}
 #selinfo.done{border:3px solid #0f5c2c;background:var(--green);color:#fff;font-size:20px}
 .skill{display:grid;grid-template-columns:128px 1fr;gap:8px;align-items:center;margin-bottom:8px}
-.act.gr{min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px;min-width:0}
+.act.gr{position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px;min-width:0}
+.act.gr .em{position:absolute;top:3px;right:4px;background:var(--red);color:#fff;font-size:14px;font-weight:800;line-height:1;padding:3px 5px;border-radius:6px}
 .act.gr .gn{font-size:34px;font-weight:900;line-height:1}
 .act.gr .gl{font-size:15px;font-weight:700;line-height:1.12;margin-top:4px;text-align:center;max-width:100%;overflow-wrap:break-word}
 .gtxt{font-size:18px;color:var(--muted)}
@@ -202,7 +203,16 @@ POINTS.forEach(function(s){ BYKEY[s.k] = {kind:'p', d:s}; });
 ERRORS.forEach(function(s){ BYKEY[s.k] = {kind:'e', d:s}; });
 var MAXP = 12;
 // Pisteet, jotka kirjaavat samalla arvosanan (1 = paras): yksi tapahtuma, kaksi vaikutusta
-var LINK = { HP:{skill:'H', g:1}, AS:{skill:'S', g:1} };
+// Yhdistetyt kirjaukset: yksi tapahtuma vaikuttaa sekä pisteisiin/virheisiin että arvosanaan.
+var LINK = {
+  HP:{skill:'H', g:1}, AS:{skill:'S', g:1},              // piste +1 ja arvosana 1
+  VOV:{skill:'V', g:4}, SV:{skill:'S', g:4}, HV:{skill:'H', g:3}  // virhe −1 ja huonoin arvosana
+};
+// Huonoin arvosana = virhe: arvosanapainike kirjaa saman yhdistetyn tapahtuman kuin virhepainike
+var GRADE2ERR = { V4:'VOV', S4:'SV', H3:'HV' };
+// Yhdistetty vaikutus lasketaan vain, jos tapahtumaan on tallennettu arvosana
+// (vanhat erilliset kirjaukset ilman arvosanaa säilyvät ennallaan).
+function linkOf(e){ var l = LINK[e.type]; return (l && e.g === l.g) ? l : null; }
 // Arvosanan väriluokka: 1 = paras (vihreä), suurin numero = huonoin (punainen)
 function gradeCls(g, max){
   if (g === 1) return 'q1';
@@ -240,15 +250,15 @@ function pById(pid){ for (var i=0;i<S.roster.length;i++) if (S.roster[i].id===pi
 function evLabel(e){
   var b = BYKEY[e.type]; if(!b) return e.type;
   if (b.kind==='g') return b.d.name + ' ' + e.g + (gradeText(e.type, e.g) ? ' – ' + gradeText(e.type, e.g) : '');
-  var l = LINK[e.type];
+  var l = linkOf(e);
   return b.d.name + (b.kind==='p' ? ' +1' : ' −1') + (l ? ' (' + skillName(l.skill).toLowerCase() + ' ' + l.g + ')' : '');
 }
 function evTag(e){
   var b = BYKEY[e.type]; if(!b) return '';
   if (b.kind==='g') return '<span class="tag g">'+esc(b.d.name)+' '+e.g+'</span> <span class="gtxt">'+esc(gradeText(e.type, e.g))+'</span>';
-  var l = LINK[e.type];
+  var l = linkOf(e);
   return '<span class="tag '+(b.kind==='p'?'p':'m')+'">'+esc(b.d.name)+(b.kind==='p'?' +1':' −1')+'</span>'
-    + (l ? '<span class="tag g">'+esc(skillName(l.skill))+' '+l.g+'</span>' : '');
+    + (l ? '<span class="tag g">'+esc(skillName(l.skill))+' '+l.g+'</span> <span class="gtxt">'+esc(gradeText(l.skill, l.g))+'</span>' : '');
 }
 function pLabel(num, name){ return (num!==''&&num!=null ? '#'+num+' ' : '') + (name||''); }
 
@@ -299,13 +309,13 @@ function renderRec(){
   h += '</div></section><div id="recent"></div><section id="actions"><div id="selinfo"></div>';
   SKILLS.forEach(function(s){
     h += '<div class="skill '+s.k+'"><div class="lbl">'+s.name+'<small>1 = paras</small></div><div class="grades" style="grid-template-columns:repeat('+s.max+',1fr)">';
-    for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+'"><span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
+    for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+(GRADE2ERR[s.k+g]?', virhe −1':'')+'">'+(GRADE2ERR[s.k+g] ? '<span class="em">−1</span>' : '')+'<span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
     h += '</div></div>';
   });
   h += '<div class="secthead">Pisteet (+1)</div><div class="multi three">';
   POINTS.forEach(function(s){ var l = LINK[s.k]; h += '<button class="act pt" data-t="'+s.k+'">'+s.label+'<small>+1'+(l ? ' · '+skillName(l.skill).toLowerCase()+' '+l.g : '')+'</small></button>'; });
   h += '</div><div class="secthead">Virheet (−1)</div><div class="multi four">';
-  ERRORS.forEach(function(s){ h += '<button class="act er" data-t="'+s.k+'">'+s.label+'<small>−1</small></button>'; });
+  ERRORS.forEach(function(s){ var l = LINK[s.k]; h += '<button class="act er" data-t="'+s.k+'">'+s.label+'<small>−1'+(l ? ' · '+skillName(l.skill).toLowerCase()+' '+l.g : '')+'</small></button>'; });
   h += '</div></section></div>';
   main.innerHTML = h;
   document.getElementById('players').onclick = function(ev){
@@ -349,6 +359,7 @@ function updRecent(){
 }
 function record(type, g){
   var m = cur(), p = pById(selPid); if (!m || !p) return;
+  if (g != null && GRADE2ERR[type + g]) type = GRADE2ERR[type + g];
   if (LINK[type]) g = LINK[type].g;
   var e = {id:uid(), ts:Date.now(), set:m.set, pid:p.id, num:p.num, name:p.name, type:type, g:g};
   m.events.push(e);
@@ -387,7 +398,7 @@ function addEv(o, e){
   if (b.kind==='g'){ var x=o[e.type]; x.n++; x.sum+=e.g; if (e.g < x.dist.length) x.dist[e.g]++; }
   else {
     o[e.type]++; if (b.kind==='p') o.plus++; else o.minus++;
-    var l = LINK[e.type];
+    var l = linkOf(e);
     if (l){ var y = o[l.skill]; y.n++; y.sum += l.g; y.dist[l.g]++; }
   }
 }
@@ -428,7 +439,7 @@ function legendHtml(){
   var h = '<div class="card"><h3>Arvosanojen selitteet (1 = paras)</h3><div class="legend">';
   SKILLS.forEach(function(s){
     h += '<div><b>' + s.name + '</b>';
-    s.labels.forEach(function(t, i){ h += '<div><span class="q" style="background:' + qc[gradeCls(i+1, s.max)] + '">' + (i+1) + '</span>' + esc(t) + '</div>'; });
+    s.labels.forEach(function(t, i){ var ek = GRADE2ERR[s.k + (i+1)]; h += '<div><span class="q" style="background:' + qc[gradeCls(i+1, s.max)] + '">' + (i+1) + '</span>' + esc(t) + (ek ? ' <span class="tag m">= ' + esc(BYKEY[ek].d.name) + ' −1</span>' : '') + '</div>'; });
     h += '</div>';
   });
   return h + '</div></div>';
@@ -450,7 +461,7 @@ function renderSum(){
   if (!sm.rows.length) h += '<tr><td colspan="16" class="zero">Ei kirjauksia</td></tr>';
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
-    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. Hyökkäyksiin sisältyvät hyökkäyspisteet (arvosana 1) ja syöttöihin ässät (arvosana 1). Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. Hyökkäyspiste = hyökkäys 1 ja ässä = syöttö 1 (+1). Vastaanotto 4, syöttö 4 ja hyökkäys 3 ovat samalla vastaanotto-, syöttö- ja hyökkäysvirheitä (−1); kumpikin painike kirjaa saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
     + legendHtml()
     + '<div class="card"><h3>Vienti</h3><div class="row">'
     + '<button class="btn" id="csvsum">⬇ Yhteenveto CSV</button>'
@@ -500,7 +511,7 @@ function csvEvents(m){
   var out = [line(['Järjestys','Aika','Erä','Nro','Nimi','Suoritus','Arvioitu taito','Arvosana (1 = paras)','Selite','Pisteet'], ';')];
   m.events.forEach(function(e, i){
     var b = BYKEY[e.type] || {kind:'?', d:{name:e.type}};
-    var l = LINK[e.type];
+    var l = linkOf(e);
     var skill = b.kind==='g' ? b.d.name : l ? skillName(l.skill) : '';
     var grade = b.kind==='g' ? e.g : l ? l.g : '';
     var txt = b.kind==='g' ? gradeText(e.type, e.g) : l ? gradeText(l.skill, l.g) : '';
