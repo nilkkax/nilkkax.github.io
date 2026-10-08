@@ -223,9 +223,10 @@ var LINK = {
 };
 // Huonoin arvosana = virhe: arvosanapainike kirjaa saman yhdistetyn tapahtuman kuin virhepainike
 var GRADE2ERR = { V4:'VOV', S4:'SV', H3:'HV' };
-// Paras hyökkäysarvosana = piste: Hyökkäys 1 kirjaa saman yhdistetyn tapahtuman kuin Hyökkäyspiste-painike
-var GRADE2PT = { H1:'HP' };
-// Tulkinta laskentaa varten: myös vanhat tallennetut Hyökkäys 1 -merkinnät lasketaan hyökkäyspisteiksi
+// Paras arvosana = piste: Hyökkäys 1 kirjaa saman yhdistetyn tapahtuman kuin Hyökkäyspiste-painike
+// ja Syöttö 1 saman kuin Ässä-painike
+var GRADE2PT = { H1:'HP', S1:'AS' };
+// Tulkinta laskentaa varten: myös vanhat tallennetut Hyökkäys 1- ja Syöttö 1 -merkinnät lasketaan pisteiksi
 // (takautuva korjaus ilman tallennetun datan muuttamista). Yksi merkintä = arvosana 1 + piste +1, kerran.
 function eff(e){ var k = (e && e.g != null) ? GRADE2PT[e.type + e.g] : null; return k ? Object.assign({}, e, {type:k}) : e; }
 // Yhdistetty vaikutus lasketaan vain, jos tapahtumaan on tallennettu arvosana
@@ -329,7 +330,7 @@ function renderRec(){
   h += '</div></section><div id="recent"></div><section id="actions"><div id="selinfo"></div>';
   SKILLS.forEach(function(s){
     h += '<div class="skill '+s.k+'"><div class="lbl">'+s.name+'<small>1 = paras</small></div><div class="grades" style="grid-template-columns:repeat('+s.max+',1fr)">';
-    for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+(GRADE2ERR[s.k+g]?', virhe −1':'')+(GRADE2PT[s.k+g]?', hyökkäyspiste +1':'')+'">'+(GRADE2ERR[s.k+g] ? '<span class="em">−1</span>' : '')+(GRADE2PT[s.k+g] ? '<span class="em ep">+1</span>' : '')+'<span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
+    for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+(GRADE2ERR[s.k+g]?', virhe −1':'')+(GRADE2PT[s.k+g]?', '+BYKEY[GRADE2PT[s.k+g]].d.name.toLowerCase()+' +1':'')+'">'+(GRADE2ERR[s.k+g] ? '<span class="em">−1</span>' : '')+(GRADE2PT[s.k+g] ? '<span class="em ep">+1</span>' : '')+'<span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
     h += '</div></div>';
   });
   h += '<div class="secthead">Pisteet (+1)</div><div class="multi three">';
@@ -493,7 +494,7 @@ function distHtml(sm, set){
   if (!sm.rows.length) h += '<tr><td colspan="23" class="zero">Ei kirjauksia</td></tr>';
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+distCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+distCells(sm.team)+'</tr></tbody></table></div>'
-    + '<p class="help">Hyökkäys 1 = hyökkäyspiste +1: hyökkäyksen arvosana 1 ja Hyökkäyspiste-painike ovat sama merkintä. Ässä lasketaan syötön arvosanaksi 1 (syöttö 1 ei ole automaattisesti ässä). Vastaanotto-, syöttö- ja hyökkäysvirhe lasketaan arvosanaksi 4 / 4 / 3. Jokainen merkintä lasketaan kerran.</p></div>';
+    + '<p class="help">Hyökkäys 1 = hyökkäyspiste +1 ja syöttö 1 = ässä +1: arvosana 1 ja Hyökkäyspiste- tai Ässä-painike ovat sama merkintä. Vastaanotto-, syöttö- ja hyökkäysvirhe lasketaan arvosanaksi 4 / 4 / 3. Jokainen merkintä lasketaan kerran.</p></div>';
   return h;
 }
 function renderSum(){
@@ -513,7 +514,7 @@ function renderSum(){
   if (!sm.rows.length) h += '<tr><td colspan="16" class="zero">Ei kirjauksia</td></tr>';
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
-    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Hyökkäys 1 = hyökkäyspiste +1</b> (myös aiemmin kirjatut hyökkäysykköset lasketaan pisteiksi). Ässä = syöttö 1 (+1), mutta syöttö 1 ei ole automaattisesti ässä – ässä kirjataan omalla painikkeellaan. Vastaanotto 4, syöttö 4 ja hyökkäys 3 ovat samalla vastaanotto-, syöttö- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Hyökkäys 1 = hyökkäyspiste +1 ja syöttö 1 (ässä / seinille) = ässä +1</b> (myös aiemmin kirjatut hyökkäys- ja syöttöykköset lasketaan pisteiksi). Vastaanotto 4, syöttö 4 ja hyökkäys 3 ovat samalla vastaanotto-, syöttö- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
     + distHtml(sm, sumSet)
     + legendHtml()
     + '<div class="card"><h3>Vienti</h3><div class="row">'
