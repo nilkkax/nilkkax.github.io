@@ -189,26 +189,27 @@ td.net{font-size:22px;font-weight:900}
 'use strict';
 // ---------- Määritykset ----------
 var KEY = 'lentopallo_tilastot_v1';
+// Taitojen järjestys kaikkialla (kirjaus, yhteenveto, jakauma, CSV): Syöttö, Vastaanotto, Passi, Hyökkäys
 var SKILLS = [
-  {k:'V', name:'Vastaanotto', max:4, plural:'Vastaanotot',
-   labels:['kuppi / keskiuhka', 'passattavissa', 'jää kauas 4–5 m', 'ässä / virhe']},
-  {k:'H', name:'Hyökkäys', max:3, plural:'Hyökkäykset',
-   labels:['piste', 'pallon saa pelattua', 'torjunta / virhe']},
   {k:'S', name:'Syöttö', max:4, plural:'Syötöt',
    labels:['ässä / seinille', 'vo rikki, ei hyvä', 'kuppi, nosto vastustajalle', 'virhe']},
+  {k:'V', name:'Vastaanotto', max:4, plural:'Vastaanotot',
+   labels:['kuppi / keskiuhka', 'passattavissa', 'jää kauas 4–5 m', 'ässä / virhe']},
   {k:'P', name:'Passi', max:2, plural:'Passit',
-   labels:['hyvä passi / pystyy lyömään', 'lyömätön / verkon päällä']}
+   labels:['hyvä passi / pystyy lyömään', 'lyömätön / verkon päällä']},
+  {k:'H', name:'Hyökkäys', max:3, plural:'Hyökkäykset',
+   labels:['piste', 'pallon saa pelattua', 'torjunta / virhe']}
 ];
 var POINTS = [
+  {k:'AS', name:'Ässä', label:'Ässä', short:'Ässä', plural:'Ässät'},
   {k:'HP', name:'Hyökkäyspiste', label:'Hyökkäys&shy;piste', short:'Hyökk.&shy;piste', plural:'Hyökkäyspisteet'},
-  {k:'TP', name:'Torjuntapiste', label:'Torjunta&shy;piste', short:'Torjunta&shy;piste', plural:'Torjuntapisteet'},
-  {k:'AS', name:'Ässä', label:'Ässä', short:'Ässä', plural:'Ässät'}
+  {k:'TP', name:'Torjuntapiste', label:'Torjunta&shy;piste', short:'Torjunta&shy;piste', plural:'Torjuntapisteet'}
 ];
 var ERRORS = [
-  {k:'VV', name:'Verkkovirhe', label:'Verkko&shy;virhe', short:'Verkko&shy;virhe', plural:'Verkkovirheet'},
-  {k:'VOV', name:'Vastaanottovirhe', label:'Vastaan&shy;otto&shy;virhe', short:'Vast.otto&shy;virhe', plural:'Vastaanottovirheet'},
   {k:'SV', name:'Syöttövirhe', label:'Syöttö&shy;virhe', short:'Syöttö&shy;virhe', plural:'Syöttövirheet'},
-  {k:'HV', name:'Hyökkäysvirhe', label:'Hyökkäys&shy;virhe', short:'Hyökk.&shy;virhe', plural:'Hyökkäysvirheet'}
+  {k:'VOV', name:'Vastaanottovirhe', label:'Vastaan&shy;otto&shy;virhe', short:'Vast.otto&shy;virhe', plural:'Vastaanottovirheet'},
+  {k:'HV', name:'Hyökkäysvirhe', label:'Hyökkäys&shy;virhe', short:'Hyökk.&shy;virhe', plural:'Hyökkäysvirheet'},
+  {k:'VV', name:'Verkkovirhe', label:'Verkko&shy;virhe', short:'Verkko&shy;virhe', plural:'Verkkovirheet'}
 ];
 var BYKEY = {};
 SKILLS.forEach(function(s){ BYKEY[s.k] = {kind:'g', d:s}; });
@@ -494,7 +495,7 @@ function distHtml(sm, set){
   if (!sm.rows.length) h += '<tr><td colspan="23" class="zero">Ei kirjauksia</td></tr>';
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+distCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+distCells(sm.team)+'</tr></tbody></table></div>'
-    + '<p class="help">Hyökkäys 1 = hyökkäyspiste +1 ja syöttö 1 = ässä +1: arvosana 1 ja Hyökkäyspiste- tai Ässä-painike ovat sama merkintä. Vastaanotto-, syöttö- ja hyökkäysvirhe lasketaan arvosanaksi 4 / 4 / 3. Jokainen merkintä lasketaan kerran.</p></div>';
+    + '<p class="help">Syöttö 1 = ässä +1 ja hyökkäys 1 = hyökkäyspiste +1: arvosana 1 ja Ässä- tai Hyökkäyspiste-painike ovat sama merkintä. Syöttö-, vastaanotto- ja hyökkäysvirhe lasketaan arvosanaksi 4 / 4 / 3. Jokainen merkintä lasketaan kerran.</p></div>';
   return h;
 }
 function renderSum(){
@@ -514,7 +515,7 @@ function renderSum(){
   if (!sm.rows.length) h += '<tr><td colspan="16" class="zero">Ei kirjauksia</td></tr>';
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
-    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Hyökkäys 1 = hyökkäyspiste +1 ja syöttö 1 (ässä / seinille) = ässä +1</b> (myös aiemmin kirjatut hyökkäys- ja syöttöykköset lasketaan pisteiksi). Vastaanotto 4, syöttö 4 ja hyökkäys 3 ovat samalla vastaanotto-, syöttö- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Syöttö 1 (ässä / seinille) = ässä +1 ja hyökkäys 1 = hyökkäyspiste +1</b> (myös aiemmin kirjatut syöttö- ja hyökkäysykköset lasketaan pisteiksi). Syöttö 4, vastaanotto 4 ja hyökkäys 3 ovat samalla syöttö-, vastaanotto- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
     + distHtml(sm, sumSet)
     + legendHtml()
     + '<div class="card"><h3>Vienti</h3><div class="row">'
