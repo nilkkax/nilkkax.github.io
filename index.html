@@ -168,6 +168,30 @@ td.net{font-size:22px;font-weight:900}
 @media (orientation:landscape) and (max-height:900px){
   .pl{min-height:104px}
 }
+#pdfrow{margin:-2px 0 12px}
+#pdfrow .btn.big{min-width:220px}
+#pdfrow .pdfnote{color:var(--muted);font-size:18px}
+.printonly{display:none}
+@media print{
+  @page{size:A4 landscape;margin:9mm}
+  html,body{background:#fff !important;font-size:11pt}
+  body{padding:0}
+  #top,#toast,#modal,.noprint,button{display:none !important}
+  main{padding:0}
+  .printonly{display:inline}
+  .card{box-shadow:none;border-radius:0;padding:0 0 8px;margin:0 0 10px;background:#fff}
+  .tablewrap{overflow:visible}
+  h2{font-size:15pt;margin:0 0 6px} h3{font-size:12pt}
+  table{font-size:9pt} th{font-size:8pt} th.grp{font-size:8.5pt}
+  th,td{padding:2px 3px} td .ka{font-size:7.5pt} td.net{font-size:10pt}
+  #disttable{font-size:9pt} #disttable th.sk{font-size:9pt} #disttable th.g{font-size:9pt;min-width:0} #disttable th,#disttable td{padding:2px 2px}
+  .help{font-size:8pt;margin:3px 0 6px}
+  .legend{font-size:8.5pt;gap:2px 16px}
+  .legend .tag{font-size:8.5pt;padding:0 5px}
+  tr{break-inside:avoid}
+  .distcard{break-before:page}
+  th,td,.legend .q{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
 </head>
 <body>
@@ -482,7 +506,7 @@ function distCells(st){
   return h;
 }
 function distHtml(sm, set){
-  var h = '<div class="card"><h2>Arvosanajakauma – '+(set==='all' ? 'koko ottelu' : 'erä '+set)+'</h2>'
+  var h = '<div class="card distcard"><h2>Arvosanajakauma – '+(set==='all' ? 'koko ottelu' : 'erä '+set)+'</h2>'
     + '<p class="help" style="margin-top:-4px">Montako kertaa kukin arvosana annettiin. <b>1 = paras</b> (vihreä), suurin numero = huonoin (punainen). ka = keskiarvo, pienempi on parempi.</p>'
     + '<div class="tablewrap"><table id="disttable"><thead><tr><th rowspan="2">Nro</th><th rowspan="2">Nimi</th>';
   SKILLS.forEach(function(k){ h += '<th class="sk s0" colspan="'+(k.max+2)+'">'+k.name+'</th>'; });
@@ -504,10 +528,13 @@ function renderSum(){
   var sets = setsOf(m);
   if (sumSet !== 'all' && sets.indexOf(sumSet) < 0) sumSet = 'all';
   var sm = summarize(m, sumSet);
-  var h = '<div class="card"><h2>Yhteenveto: vs '+esc(m.opponent||'?')+' · '+fiDate(m.date)+'</h2><div class="seg" id="sets">'
+  var h = '<div class="card"><h2>Yhteenveto: vs '+esc(m.opponent||'?')+' · '+fiDate(m.date)+'<span class="printonly"> · '+(sumSet==='all' ? 'Koko ottelu' : 'Erä '+sumSet)+'</span></h2><div class="seg noprint" id="sets">'
     + '<button data-s="all" class="'+(sumSet==='all'?'on':'')+'">Koko ottelu</button>';
   sets.forEach(function(n){ h += '<button data-s="'+n+'" class="'+(sumSet===n?'on':'')+'">Erä '+n+'</button>'; });
-  h += '</div><div class="tablewrap"><table id="sumtable"><thead><tr><th rowspan="2">Nro</th><th rowspan="2">Nimi</th>'
+  h += '</div><div class="row noprint" id="pdfrow"><button class="btn big green" id="pdf">Jaa PDF</button>'
+    + '<button class="btn gray" id="print">Tulosta</button>'
+    + '<span class="pdfnote">PDF: yhteenveto ja arvosanajakauma, '+(sumSet==='all' ? 'koko ottelu' : 'erä '+sumSet)+'</span></div>'
+    + '<div class="tablewrap"><table id="sumtable"><thead><tr><th rowspan="2">Nro</th><th rowspan="2">Nimi</th>'
     + '<th colspan="4" class="grp">Suoritukset: kpl ja keskiarvo (ka) · 1 = paras</th><th colspan="3" class="grp">Pisteet +1</th><th colspan="4" class="grp">Virheet −1</th><th colspan="3" class="grp">Yhteensä</th></tr><tr>';
   SKILLS.forEach(function(s){ h += '<th>'+s.name+'<br>1–'+s.max+'<br><span style="font-weight:600;color:var(--green)">1 = paras</span></th>'; });
   POINTS.concat(ERRORS).forEach(function(s){ h += '<th>'+s.short+'</th>'; });
@@ -518,7 +545,7 @@ function renderSum(){
     + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Syöttö 1 (ässä / seinille) = ässä +1 ja hyökkäys 1 = hyökkäyspiste +1</b> (myös aiemmin kirjatut syöttö- ja hyökkäysykköset lasketaan pisteiksi). Syöttö 4, vastaanotto 4 ja hyökkäys 3 ovat samalla syöttö-, vastaanotto- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
     + distHtml(sm, sumSet)
     + legendHtml()
-    + '<div class="card"><h3>Vienti</h3><div class="row">'
+    + '<div class="card noprint"><h3>Vienti</h3><div class="row">'
     + '<button class="btn" id="csvsum">⬇ Yhteenveto CSV</button>'
     + '<button class="btn" id="csvev">⬇ Tapahtumat CSV</button>'
     + '<button class="btn green" id="share">Jaa…</button>'
@@ -529,6 +556,8 @@ function renderSum(){
     var b = ev.target.closest('button'); if (!b) return;
     sumSet = b.dataset.s === 'all' ? 'all' : +b.dataset.s; renderSum();
   };
+  document.getElementById('pdf').onclick = function(){ sharePdf(m, sumSet); };
+  document.getElementById('print').onclick = function(){ window.print(); };
   document.getElementById('csvsum').onclick = function(){ download(fname(m,'yhteenveto'), csvSummary(m)); };
   document.getElementById('csvev').onclick = function(){ download(fname(m,'tapahtumat'), csvEvents(m)); };
   document.getElementById('share').onclick = function(){ shareMatch(m); };
@@ -598,6 +627,226 @@ function shareMatch(m){
     if (navigator.share){ navigator.share({title:'Lentopallotilastot', text:csvSummary(m, '\t')}).catch(function(){}); return; }
   } catch(e) {}
   copyText(csvSummary(m, '\t'));
+}
+// ---------- PDF-raportti (oma pieni PDF-kirjoitin: Helvetica + WinAnsiEncoding, toimii täysin offline) ----------
+// Merkkileveydet (1/1000 em) WinAnsi-merkeille 32–255, Helvetica ja Helvetica-Bold.
+var PDFW = {r:[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,0,556,0,222,556,333,1000,556,556,333,1000,667,333,1000,0,611,0,0,222,222,333,333,350,556,1000,333,1000,500,333,944,0,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],
+  b:[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,0,556,0,278,556,500,1000,556,556,333,1000,667,333,1000,0,611,0,0,278,278,500,500,350,556,1000,333,1000,556,333,944,0,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556]};
+var WINANSI = {0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,
+  0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,
+  0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F,0x2212:0x96,0x00AD:0x2D};
+// JS-merkkijono -> WinAnsi-tavujono ("binäärimerkkijono", jokainen merkki 0–255); muut merkit '?'
+function winAnsi(s){
+  s = String(s == null ? '' : s); if (s.normalize) s = s.normalize('NFC');
+  var o = '';
+  for (var i=0;i<s.length;i++){
+    var c = s.charCodeAt(i);
+    if (c >= 0xD800 && c <= 0xDBFF){ i++; o += '?'; continue; }
+    if (c === 9 || c === 10 || c === 13) c = 32;
+    if (WINANSI[c]) o += String.fromCharCode(WINANSI[c]);
+    else if ((c >= 32 && c < 127) || (c >= 0xA0 && c <= 0xFF)) o += String.fromCharCode(c);
+    else o += '?';
+  }
+  return o;
+}
+function pdfTW(bin, size, bold){
+  var t = bold ? PDFW.b : PDFW.r, w = 0;
+  for (var i=0;i<bin.length;i++){ var c = bin.charCodeAt(i); w += (c >= 32 ? t[c-32] : 0) || 556; }
+  return w * size / 1000;
+}
+function pdfN(x){ return (Math.round(x*100)/100).toString(); }
+function PdfDoc(){ this.W = 841.89; this.H = 595.28; this.pages = []; this.c = null; }
+PdfDoc.prototype.page = function(){ this.c = []; this.pages.push(this.c); };
+PdfDoc.prototype.rgb = function(col, stroke){ return pdfN(col[0])+' '+pdfN(col[1])+' '+pdfN(col[2])+(stroke?' RG':' rg'); };
+// Koordinaatit vasemmasta yläkulmasta (pt)
+PdfDoc.prototype.rect = function(x, y, w, h, fill){ this.c.push(this.rgb(fill)+' '+pdfN(x)+' '+pdfN(this.H-y-h)+' '+pdfN(w)+' '+pdfN(h)+' re f'); };
+PdfDoc.prototype.line = function(x1, y1, x2, y2, col, lw){ this.c.push(this.rgb(col, true)+' '+pdfN(lw||0.5)+' w '+pdfN(x1)+' '+pdfN(this.H-y1)+' m '+pdfN(x2)+' '+pdfN(this.H-y2)+' l S'); };
+// Teksti; y = peruslinja. align: l/c/r keskitetään laatikkoon [x, x+w]. Liian pitkä teksti pienennetään ja tarvittaessa lyhennetään (…).
+PdfDoc.prototype.text = function(str, x, y, size, o){
+  o = o || {}; var bin = winAnsi(str), bold = !!o.bold, w = o.w, tw = pdfTW(bin, size, bold);
+  if (w && tw > w - 3){
+    var ms = Math.max(o.min || 7, size * (w - 3) / tw);
+    if (ms < size){ size = ms; tw = pdfTW(bin, size, bold); }
+    while (tw > w - 3 && bin.length > 1){ bin = bin.slice(0, -2) + '\x85'; tw = pdfTW(bin, size, bold); }
+  }
+  var tx = x;
+  if (w && o.align === 'c') tx = x + (w - tw) / 2; else if (w && o.align === 'r') tx = x + w - tw - 2; else if (w) tx = x + 2.5;
+  this.c.push('BT /'+(bold?'F2':'F1')+' '+pdfN(size)+' Tf '+this.rgb(o.color || [0.07,0.09,0.15])+' '+pdfN(tx)+' '+pdfN(this.H-y)+' Td ('+bin.replace(/[\\()]/g, '\\$&')+') Tj ET');
+};
+function pdfUtf16(s){ var h = 'FEFF'; for (var i=0;i<s.length;i++) h += ('000'+s.charCodeAt(i).toString(16).toUpperCase()).slice(-4); return '<'+h+'>'; }
+PdfDoc.prototype.bytes = function(title){
+  var objs = [], self = this;
+  function add(s){ objs.push(s); return objs.length; }
+  add('<< /Type /Catalog /Pages 2 0 R >>');
+  add('');  // Pages, täytetään lopuksi
+  add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  var info = add('<< /Title '+pdfUtf16(title || 'Lentopallotilastot')+' /Producer (Lentopallotilastot) >>');
+  var kids = [];
+  this.pages.forEach(function(ops){
+    var data = ops.join('\n');
+    var cs = add('<< /Length '+data.length+' >>\nstream\n'+data+'\nendstream');
+    kids.push(add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+pdfN(self.W)+' '+pdfN(self.H)+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+cs+' 0 R >>'));
+  });
+  objs[1] = '<< /Type /Pages /Kids ['+kids.map(function(k){ return k+' 0 R'; }).join(' ')+'] /Count '+kids.length+' >>';
+  var out = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n', offs = [];
+  objs.forEach(function(o, i){ offs.push(out.length); out += (i+1)+' 0 obj\n'+o+'\nendobj\n'; });
+  var xref = out.length;
+  out += 'xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';
+  offs.forEach(function(n){ out += ('000000000'+n).slice(-10)+' 00000 n \n'; });
+  out += 'trailer\n<< /Size '+(objs.length+1)+' /Root 1 0 R /Info '+info+' 0 R >>\nstartxref\n'+xref+'\n%%EOF\n';
+  var b = new Uint8Array(out.length);
+  for (var i=0;i<out.length;i++) b[i] = out.charCodeAt(i) & 255;
+  return b;
+};
+var PC = { grid:[0.72,0.75,0.8], head:[0.89,0.91,0.95], g1:[0.86,0.97,0.89], gw:[0.996,0.89,0.89], tot:[1,0.95,0.78],
+  pos:[0.08,0.5,0.24], neg:[0.73,0.11,0.11], mute:[0.6,0.63,0.68], ink:[0.07,0.09,0.15] };
+// Taulukko: cols [{w, bg}], head: [{t, span}] (ryhmärivi, valinnainen) + sarakeotsikot (\n = rivinvaihto), rows: [{c:[{t, color, bold}], tot}]
+// Jakaa rivit sivuille tarvittaessa ja toistaa otsikot. Palauttaa uuden y:n.
+function pdfTable(d, x, y, T, ctx){
+  var RH = T.rh || 13, FS = T.fs || 8.5, HF = 7.2;
+  var hl = 1; T.heads.forEach(function(h){ hl = Math.max(hl, String(h.t).split('\n').length); });
+  var GH = T.groups ? 12 : 0, HH = 4 + hl * 8.4, head = GH + HH;
+  var W = T.cols.reduce(function(a, c){ return a + c.w; }, 0);
+  var i = 0;
+  while (i < T.rows.length){
+    if (y + head + RH > ctx.bottom){ ctx.newPage(); y = ctx.top; }
+    var n = Math.max(1, Math.min(T.rows.length - i, Math.floor((ctx.bottom - y - head) / RH)));
+    var part = T.rows.slice(i, i + n), y0 = y, yb = y + head, h = head + n * RH, cx;
+    // Taustat
+    d.rect(x, y0, W, head, PC.head);
+    cx = x; T.cols.forEach(function(c){ if (c.hbg) d.rect(cx, y0 + GH, c.w, HH, c.hbg); if (c.bg) d.rect(cx, yb, c.w, n * RH, c.bg); cx += c.w; });
+    part.forEach(function(r, k){ if (r.tot) d.rect(x, yb + k * RH, W, RH, PC.tot); });
+    // Ryhmäotsikot
+    if (T.groups){
+      cx = x; var ci = 0;
+      T.groups.forEach(function(g){
+        var gw = 0; for (var j=0;j<g.span;j++) gw += T.cols[ci + j].w;
+        if (g.t) d.text(g.t, cx, y0 + 8.8, 7.5, {bold:true, w:gw, align:'c'});
+        if (g.t) d.line(cx, y0 + GH, cx + gw, y0 + GH, PC.grid, 0.5);
+        if (ci > 0) d.line(cx, y0, cx, y0 + GH, PC.grid, 0.5);
+        cx += gw; ci += g.span;
+      });
+    }
+    // Sarakeotsikot (pystykeskitetty)
+    cx = x;
+    T.heads.forEach(function(hd, j){
+      var ls = String(hd.t).split('\n'), ty = y0 + (hd.full ? 0 : GH) + ((hd.full ? head : HH) - ls.length * 8.4) / 2 + 6.6;
+      ls.forEach(function(s, k){ d.text(s, cx, ty + k * 8.4, hd.fs || HF, {bold:true, w:T.cols[j].w, align: hd.align || 'c', color: hd.color}); });
+      cx += T.cols[j].w;
+    });
+    // Rivit
+    part.forEach(function(r, k){
+      var ry = yb + k * RH; cx = x;
+      r.c.forEach(function(cell, j){
+        d.text(cell.t, cx, ry + RH/2 + FS*0.35, cell.fs || FS, {bold: cell.bold || r.tot, w:T.cols[j].w, align: cell.align || 'c', color: cell.color});
+        cx += T.cols[j].w;
+      });
+    });
+    // Ruudukko
+    for (var k=0;k<=n;k++) d.line(x, yb + k * RH, x + W, yb + k * RH, PC.grid, k === 0 ? 0.8 : 0.4);
+    if (part.length && part[part.length-1].tot) d.line(x, yb + (n-1) * RH, x + W, yb + (n-1) * RH, [0.2,0.22,0.27], 0.9);
+    d.line(x, y0, x + W, y0, PC.grid, 0.6);
+    cx = x;
+    T.cols.forEach(function(c, j){
+      var full = T.heads[j] && T.heads[j].full;
+      d.line(cx, (full || !T.groups || c.gs) ? y0 : y0 + GH, cx, y0 + h, c.gs ? [0.3,0.33,0.4] : PC.grid, c.gs ? 0.9 : 0.4);
+      cx += c.w;
+    });
+    d.line(x + W, y0, x + W, y0 + h, PC.grid, 0.6);
+    i += n; y = y0 + h + 6;
+  }
+  return y;
+}
+function pdfName(m, set){
+  var o = String(m.opponent||'ottelu').toLowerCase().replace(/[åä]/g,'a').replace(/ö/g,'o').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'ottelu';
+  return 'lentopallo_' + o + '_' + (m.date||today()) + (set === 'all' ? '' : '_era' + set) + '.pdf';
+}
+function plainLbl(s){ return String(s).replace(/\.&shy;/g, '.\n').replace(/&shy;/g, '-\n'); }
+function buildReportPdf(m, set){
+  var sm = summarize(m, set), d = new PdfDoc(), L = 28, TOP = 28, FOOT = 22;
+  var ctx = { top: TOP + 14, bottom: d.H - TOP - FOOT, newPage: function(){ d.page(); } };
+  var setTxt = set === 'all' ? 'Koko ottelu' : 'Erä ' + set;
+  d.page();
+  d.text('Lentopallotilastot', L, TOP + 14, 17, {bold:true});
+  d.text('vs ' + (m.opponent || '?') + '  ·  ' + fiDate(m.date) + '  ·  ' + setTxt, L, TOP + 32, 12, {bold:true, color:[0.12,0.23,0.54]});
+  var y = TOP + 50;
+  var num = function(n, cls){ return {t: String(n), color: n ? (cls === 'p' ? PC.pos : cls === 'e' ? PC.neg : PC.ink) : PC.mute, bold: !!n && !!cls}; };
+  var RH = sm.rows.length <= 12 ? 14 : 13;  // väljempi rivikorkeus, kun kaikki mahtuu yhdelle sivulle
+  var players = sm.rows.map(function(r){ return {p:r.p, s:r.s, tot:false}; }).concat([{p:{num:'', name:'Joukkue yht.'}, s:sm.team, tot:true}]);
+  // Taulukko 1: yhteenveto (samat sarakkeet ja järjestys kuin näytöllä)
+  var cols = [{w:26},{w:104}], heads = [{t:'Nro', full:true},{t:'Nimi', full:true, align:'l'}];
+  SKILLS.forEach(function(s, i){ cols.push({w:60, gs: i === 0}); heads.push({t:s.name + '\n1–' + s.max}); });
+  POINTS.forEach(function(s, i){ cols.push({w:40, gs: i === 0}); heads.push({t:plainLbl(s.short)}); });
+  ERRORS.forEach(function(s, i){ cols.push({w:44, gs: i === 0}); heads.push({t:plainLbl(s.short)}); });
+  ['Plus','Miinus','Netto'].forEach(function(t, i){ cols.push({w:40, gs: i === 0}); heads.push({t:t}); });
+  var rows1 = players.map(function(r){
+    var s = r.s, c = [{t:String(r.p.num||''), bold:true}, {t:r.p.name, bold:true, align:'l'}];
+    SKILLS.forEach(function(k){ var x = s[k.k]; c.push(x.n ? {t: x.n + ' / ' + dec(x.sum/x.n)} : {t:'–', color:PC.mute}); });
+    POINTS.forEach(function(k){ c.push(num(s[k.k], 'p')); });
+    ERRORS.forEach(function(k){ c.push(num(s[k.k], 'e')); });
+    var net = s.plus - s.minus;
+    c.push({t:String(s.plus), color:PC.pos, bold:true}, {t:String(s.minus), color:PC.neg, bold:true},
+           {t:(net > 0 ? '+' : '') + net, color: net > 0 ? PC.pos : net < 0 ? PC.neg : PC.ink, bold:true, fs:9.5});
+    return {c:c, tot:r.tot};
+  });
+  d.text('Yhteenveto – ' + setTxt.toLowerCase(), L, y, 10.5, {bold:true}); y += 6;
+  y = pdfTable(d, L, y, {rh:RH, cols:cols, heads:heads, rows:rows1,
+    groups:[{t:'',span:2},{t:'Suoritukset: kpl / keskiarvo (1 = paras)',span:SKILLS.length},{t:'Pisteet +1',span:POINTS.length},{t:'Virheet −1',span:ERRORS.length},{t:'Yhteensä',span:3}]}, ctx);
+  // Taulukko 2: arvosanajakauma
+  y += 10;
+  var cols2 = [{w:26},{w:104}], heads2 = [{t:'Nro', full:true},{t:'Nimi', full:true, align:'l'}], groups2 = [{t:'',span:2}];
+  var rest = d.W - 2*L - 130, nc = 0; SKILLS.forEach(function(k){ nc += k.max + 2; });
+  var cw = rest / nc;
+  SKILLS.forEach(function(k){
+    groups2.push({t:k.name, span:k.max + 2});
+    for (var g=1; g<=k.max; g++){
+      var bg = g === 1 ? PC.g1 : g === k.max ? PC.gw : null;
+      cols2.push({w:cw, bg:bg, hbg: g === 1 ? [0.73,0.97,0.82] : g === k.max ? [1,0.8,0.8] : null, gs: g === 1});
+      heads2.push({t:String(g), fs:8.5});
+    }
+    cols2.push({w:cw, bg:[0.965,0.97,0.976]}); heads2.push({t:'kpl'});
+    cols2.push({w:cw, bg:[0.965,0.97,0.976]}); heads2.push({t:'ka'});
+  });
+  var rows2 = players.map(function(r){
+    var c = [{t:String(r.p.num||''), bold:true}, {t:r.p.name, bold:true, align:'l'}];
+    SKILLS.forEach(function(k){
+      var x = r.s[k.k];
+      for (var g=1; g<=k.max; g++) c.push(x.n ? {t:String(x.dist[g]), color: x.dist[g] ? PC.ink : PC.mute, bold: !!x.dist[g]} : {t:''});
+      c.push(x.n ? {t:String(x.n), bold:true} : {t:'–', color:PC.mute});
+      c.push(x.n ? {t:dec(x.sum/x.n), bold:true} : {t:'–', color:PC.mute});
+    });
+    return {c:c, tot:r.tot};
+  });
+  var needed = 18 + 12 + 12.4 + rows2.length * RH;
+  if (y + needed > ctx.bottom && rows2.length * RH + 60 < ctx.bottom - ctx.top){ d.page(); y = ctx.top; }
+  d.text('Arvosanajakauma – ' + setTxt.toLowerCase() + ' (montako kertaa kukin arvosana annettiin)', L, y, 10.5, {bold:true}); y += 6;
+  pdfTable(d, L, y, {rh:RH, cols:cols2, heads:heads2, rows:rows2, groups:groups2}, ctx);
+  // Alatunniste joka sivulle
+  var now = new Date(), stamp = 'Luotu ' + now.getDate() + '.' + (now.getMonth()+1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + '.' + pad(now.getMinutes());
+  d.pages.forEach(function(ops, i){
+    d.c = ops;
+    d.line(L, d.H - TOP - 13, d.W - L, d.H - TOP - 13, PC.grid, 0.5);
+    d.text('1 = paras. Syöttö 1 = ässä +1, Hyökkäys 1 = hyökkäyspiste +1, S4/V4/H3 = virhe −1. Netto = pisteet (+1) − virheet (−1).', L, d.H - TOP - 3, 8, {color:[0.3,0.33,0.4]});
+    d.text(stamp + '   ·   Sivu ' + (i+1) + '/' + d.pages.length, d.W - L - 200, d.H - TOP - 3, 8, {w:200, align:'r', color:[0.3,0.33,0.4]});
+  });
+  return d.bytes('Lentopallotilastot vs ' + (m.opponent||'') + ' ' + fiDate(m.date) + ' – ' + setTxt);
+}
+// Jaa PDF: luodaan synkronisesti ja kutsutaan navigator.sharea suoraan napin painalluksesta (iPadin vaatimus).
+function sharePdf(m, set){
+  var bytes, name = pdfName(m, set), file = null;
+  try { bytes = buildReportPdf(m, set); } catch(e){ toast('PDF:n luonti epäonnistui', 'bad'); return; }
+  try { file = new File([bytes], name, {type:'application/pdf'}); } catch(e){ file = null; }
+  if (file && navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+    try {
+      navigator.share({files:[file], title:'Lentopallotilastot vs ' + (m.opponent||'') + ' ' + fiDate(m.date)}).catch(function(err){
+        if (err && err.name === 'AbortError') return;
+        download(name, bytes, 'application/pdf');
+      });
+      return;
+    } catch(e){}
+  }
+  download(name, bytes, 'application/pdf');
 }
 function copyText(t){
   function fallback(){
