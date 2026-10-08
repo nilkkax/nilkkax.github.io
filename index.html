@@ -67,6 +67,7 @@ main{padding:12px}
 .skill{display:grid;grid-template-columns:128px 1fr;gap:8px;align-items:center;margin-bottom:8px}
 .act.gr{position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px;min-width:0}
 .act.gr .em{position:absolute;top:3px;right:4px;background:var(--red);color:#fff;font-size:14px;font-weight:800;line-height:1;padding:3px 5px;border-radius:6px}
+.act.gr .em.ep{background:var(--green)}
 .act.gr .gn{font-size:34px;font-weight:900;line-height:1}
 .act.gr .gl{font-size:15px;font-weight:700;line-height:1.12;margin-top:4px;text-align:center;max-width:100%;overflow-wrap:break-word}
 .gtxt{font-size:18px;color:var(--muted)}
@@ -222,6 +223,11 @@ var LINK = {
 };
 // Huonoin arvosana = virhe: arvosanapainike kirjaa saman yhdistetyn tapahtuman kuin virhepainike
 var GRADE2ERR = { V4:'VOV', S4:'SV', H3:'HV' };
+// Paras hyökkäysarvosana = piste: Hyökkäys 1 kirjaa saman yhdistetyn tapahtuman kuin Hyökkäyspiste-painike
+var GRADE2PT = { H1:'HP' };
+// Tulkinta laskentaa varten: myös vanhat tallennetut Hyökkäys 1 -merkinnät lasketaan hyökkäyspisteiksi
+// (takautuva korjaus ilman tallennetun datan muuttamista). Yksi merkintä = arvosana 1 + piste +1, kerran.
+function eff(e){ var k = (e && e.g != null) ? GRADE2PT[e.type + e.g] : null; return k ? Object.assign({}, e, {type:k}) : e; }
 // Yhdistetty vaikutus lasketaan vain, jos tapahtumaan on tallennettu arvosana
 // (vanhat erilliset kirjaukset ilman arvosanaa säilyvät ennallaan).
 function linkOf(e){ var l = LINK[e.type]; return (l && e.g === l.g) ? l : null; }
@@ -260,12 +266,14 @@ function dec(x){ return x.toFixed(2).replace('.', ','); }
 function sortedRoster(){ return S.roster.slice().sort(function(a,b){ return (parseInt(a.num,10)||999) - (parseInt(b.num,10)||999) || String(a.name).localeCompare(String(b.name),'fi'); }); }
 function pById(pid){ for (var i=0;i<S.roster.length;i++) if (S.roster[i].id===pid) return S.roster[i]; return null; }
 function evLabel(e){
+  e = eff(e);
   var b = BYKEY[e.type]; if(!b) return e.type;
   if (b.kind==='g') return b.d.name + ' ' + e.g + (gradeText(e.type, e.g) ? ' – ' + gradeText(e.type, e.g) : '');
   var l = linkOf(e);
   return b.d.name + (b.kind==='p' ? ' +1' : ' −1') + (l ? ' (' + skillName(l.skill).toLowerCase() + ' ' + l.g + ')' : '');
 }
 function evTag(e){
+  e = eff(e);
   var b = BYKEY[e.type]; if(!b) return '';
   if (b.kind==='g') return '<span class="tag g">'+esc(b.d.name)+' '+e.g+'</span> <span class="gtxt">'+esc(gradeText(e.type, e.g))+'</span>';
   var l = linkOf(e);
@@ -321,7 +329,7 @@ function renderRec(){
   h += '</div></section><div id="recent"></div><section id="actions"><div id="selinfo"></div>';
   SKILLS.forEach(function(s){
     h += '<div class="skill '+s.k+'"><div class="lbl">'+s.name+'<small>1 = paras</small></div><div class="grades" style="grid-template-columns:repeat('+s.max+',1fr)">';
-    for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+(GRADE2ERR[s.k+g]?', virhe −1':'')+'">'+(GRADE2ERR[s.k+g] ? '<span class="em">−1</span>' : '')+'<span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
+    for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+(GRADE2ERR[s.k+g]?', virhe −1':'')+(GRADE2PT[s.k+g]?', hyökkäyspiste +1':'')+'">'+(GRADE2ERR[s.k+g] ? '<span class="em">−1</span>' : '')+(GRADE2PT[s.k+g] ? '<span class="em ep">+1</span>' : '')+'<span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
     h += '</div></div>';
   });
   h += '<div class="secthead">Pisteet (+1)</div><div class="multi three">';
@@ -372,6 +380,7 @@ function updRecent(){
 function record(type, g){
   var m = cur(), p = pById(selPid); if (!m || !p) return;
   if (g != null && GRADE2ERR[type + g]) type = GRADE2ERR[type + g];
+  else if (g != null && GRADE2PT[type + g]) type = GRADE2PT[type + g];
   if (LINK[type]) g = LINK[type].g;
   var e = {id:uid(), ts:Date.now(), set:m.set, pid:p.id, num:p.num, name:p.name, type:type, g:g};
   m.events.push(e);
@@ -406,6 +415,7 @@ function emptyStat(){
   return o;
 }
 function addEv(o, e){
+  e = eff(e);
   var b = BYKEY[e.type]; if (!b) return;
   if (b.kind==='g'){ var x=o[e.type]; x.n++; x.sum+=e.g; if (e.g < x.dist.length) x.dist[e.g]++; }
   else {
@@ -451,7 +461,7 @@ function legendHtml(){
   var h = '<div class="card"><h3>Arvosanojen selitteet (1 = paras)</h3><div class="legend">';
   SKILLS.forEach(function(s){
     h += '<div><b>' + s.name + '</b>';
-    s.labels.forEach(function(t, i){ var ek = GRADE2ERR[s.k + (i+1)]; h += '<div><span class="q" style="background:' + qc[gradeCls(i+1, s.max)] + '">' + (i+1) + '</span>' + esc(t) + (ek ? ' <span class="tag m">= ' + esc(BYKEY[ek].d.name) + ' −1</span>' : '') + '</div>'; });
+    s.labels.forEach(function(t, i){ var ek = GRADE2ERR[s.k + (i+1)], pk = GRADE2PT[s.k + (i+1)]; h += '<div><span class="q" style="background:' + qc[gradeCls(i+1, s.max)] + '">' + (i+1) + '</span>' + esc(t) + (ek ? ' <span class="tag m">= ' + esc(BYKEY[ek].d.name) + ' −1</span>' : '') + (pk ? ' <span class="tag p">= ' + esc(BYKEY[pk].d.name) + ' +1</span>' : '') + '</div>'; });
     h += '</div>';
   });
   return h + '</div></div>';
@@ -483,7 +493,7 @@ function distHtml(sm, set){
   if (!sm.rows.length) h += '<tr><td colspan="23" class="zero">Ei kirjauksia</td></tr>';
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+distCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+distCells(sm.team)+'</tr></tbody></table></div>'
-    + '<p class="help">Hyökkäyspiste lasketaan hyökkäyksen arvosanaksi 1 ja ässä syötön arvosanaksi 1. Vastaanotto-, syöttö- ja hyökkäysvirhe lasketaan arvosanaksi 4 / 4 / 3. Jokainen merkintä lasketaan kerran.</p></div>';
+    + '<p class="help">Hyökkäys 1 = hyökkäyspiste +1: hyökkäyksen arvosana 1 ja Hyökkäyspiste-painike ovat sama merkintä. Ässä lasketaan syötön arvosanaksi 1 (syöttö 1 ei ole automaattisesti ässä). Vastaanotto-, syöttö- ja hyökkäysvirhe lasketaan arvosanaksi 4 / 4 / 3. Jokainen merkintä lasketaan kerran.</p></div>';
   return h;
 }
 function renderSum(){
@@ -503,7 +513,7 @@ function renderSum(){
   if (!sm.rows.length) h += '<tr><td colspan="16" class="zero">Ei kirjauksia</td></tr>';
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
-    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. Hyökkäyspiste = hyökkäys 1 ja ässä = syöttö 1 (+1). Vastaanotto 4, syöttö 4 ja hyökkäys 3 ovat samalla vastaanotto-, syöttö- ja hyökkäysvirheitä (−1); kumpikin painike kirjaa saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Hyökkäys 1 = hyökkäyspiste +1</b> (myös aiemmin kirjatut hyökkäysykköset lasketaan pisteiksi). Ässä = syöttö 1 (+1), mutta syöttö 1 ei ole automaattisesti ässä – ässä kirjataan omalla painikkeellaan. Vastaanotto 4, syöttö 4 ja hyökkäys 3 ovat samalla vastaanotto-, syöttö- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
     + distHtml(sm, sumSet)
     + legendHtml()
     + '<div class="card"><h3>Vienti</h3><div class="row">'
@@ -553,6 +563,7 @@ function csvSummary(m, sep){
 function csvEvents(m){
   var out = [line(['Järjestys','Aika','Erä','Nro','Nimi','Suoritus','Arvioitu taito','Arvosana (1 = paras)','Selite','Pisteet'], ';')];
   m.events.forEach(function(e, i){
+    e = eff(e);
     var b = BYKEY[e.type] || {kind:'?', d:{name:e.type}};
     var l = linkOf(e);
     var skill = b.kind==='g' ? b.d.name : l ? skillName(l.skill) : '';
