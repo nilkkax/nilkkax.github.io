@@ -65,7 +65,7 @@ main{padding:12px}
 #selinfo.on{border:3px solid var(--sel);background:#fffbe6}
 #selinfo.done{border:3px solid #0f5c2c;background:var(--green);color:#fff;font-size:20px}
 .skill{display:grid;grid-template-columns:128px 1fr;gap:8px;align-items:center;margin-bottom:8px}
-.act.gr{position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px;min-width:0}
+.act.gr{position:relative;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 6px;min-width:0}
 .act.gr .em{position:absolute;top:3px;right:4px;background:var(--red);color:#fff;font-size:14px;font-weight:800;line-height:1;padding:3px 5px;border-radius:6px}
 .act.gr .em.ep{background:var(--green)}
 .act.gr .gn{font-size:34px;font-weight:900;line-height:1}
@@ -86,7 +86,7 @@ main{padding:12px}
 .skill.P.hi{background:#fff4d6;outline:3px solid var(--amber);border-radius:12px}
 .skill.P.dim{opacity:.55}
 .skill.P.hi .lbl::before{content:"★ ";color:var(--amber)}
-.secthead{font-size:18px;font-weight:800;color:var(--muted);margin:12px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.secthead{font-size:18px;font-weight:800;color:var(--muted);margin:8px 0 5px;text-transform:uppercase;letter-spacing:.04em}
 .multi{display:grid;gap:8px}
 .multi.three{grid-template-columns:repeat(3,1fr)}
 .multi.four{grid-template-columns:repeat(4,1fr)}
@@ -96,6 +96,17 @@ main{padding:12px}
 #recent{background:#fff;border-radius:12px;padding:8px 12px;font-size:18px}
 #recent div{padding:3px 0;border-bottom:1px solid #e3e7ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #recent div:last-child{border:none}
+#recent div.o{color:#075985}
+.opprow{display:grid;grid-template-columns:128px 1fr;gap:8px;align-items:center;margin-top:6px;padding-top:4px;border-top:2px dashed #93c5fd}
+.opprow .lbl{font-size:17px;font-weight:800;line-height:1.1;color:#075985}
+.opprow .lbl small{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-top:2px}
+.opprow .multi{grid-template-columns:repeat(2,1fr)}
+.act.opp{min-height:58px;background:#e0f2fe;color:#0c4a6e;border-color:#0284c7;font-size:21px;line-height:1.05;padding:3px 4px}
+.act.opp small{font-size:15px;font-weight:700;opacity:.85}
+#actions.off .act.opp{opacity:1}
+.tag.o{background:#e0f2fe;color:#075985}
+#opptable{width:auto;min-width:520px}
+#opptable td.opv{color:#075985;font-weight:800}
 
 /* Taulukot */
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -162,7 +173,7 @@ td.net{font-size:22px;font-weight:900}
 @media (max-width:900px){
   #rec{grid-template-columns:1fr;grid-template-areas:'left' 'actions' 'recent';grid-template-rows:auto}
   #players{grid-template-columns:repeat(4,1fr)}
-  .pl{min-height:96px}
+  .pl{min-height:84px}
   .prow{grid-template-columns:90px 1fr 160px 64px}
 }
 @media (orientation:landscape) and (max-height:900px){
@@ -239,6 +250,22 @@ var BYKEY = {};
 SKILLS.forEach(function(s){ BYKEY[s.k] = {kind:'g', d:s}; });
 POINTS.forEach(function(s){ BYKEY[s.k] = {kind:'p', d:s}; });
 ERRORS.forEach(function(s){ BYKEY[s.k] = {kind:'e', d:s}; });
+// Vastustajan virheet: joukkuetason merkinnät ilman pelaajaa. Eivät vaikuta plussiin, miinuksiin eivätkä nettoon.
+var OPP = [
+  {k:'OSV', name:'Vastustajan syöttövirhe', short:'syöttövirhe', plural:'Syöttövirheet'},
+  {k:'OHV', name:'Vastustajan hyökkäysvirhe', short:'hyökkäysvirhe', plural:'Hyökkäysvirheet'}
+];
+OPP.forEach(function(s){ BYKEY[s.k] = {kind:'o', d:s}; });
+function isOpp(e){ var b = BYKEY[e && e.type]; return !!(b && b.kind === 'o'); }
+// Kuka: pelaajan merkinnöissä "#nro nimi", vastustajan merkinnöissä tyhjä (teksti kertoo jo sen)
+function evWho(e){ return isOpp(e) ? '' : pLabel(e.num, e.name); }
+function whoPrefix(e, sep){ var w = evWho(e); return w ? w + sep : ''; }
+// Vastustajan virheet: {OSV, OHV, total} valitulle erälle tai koko ottelulle
+function oppCount(m, set){
+  var o = {total:0}; OPP.forEach(function(s){ o[s.k] = 0; });
+  (m.events||[]).forEach(function(e){ if (isOpp(e) && (set === 'all' || e.set === set)){ o[e.type]++; o.total++; } });
+  return o;
+}
 var MAXP = 12;
 // Pisteet, jotka kirjaavat samalla arvosanan (1 = paras): yksi tapahtuma, kaksi vaikutusta
 // Yhdistetyt kirjaukset: yksi tapahtuma vaikuttaa sekä pisteisiin/virheisiin että arvosanaan.
@@ -294,6 +321,7 @@ function pById(pid){ for (var i=0;i<S.roster.length;i++) if (S.roster[i].id===pi
 function evLabel(e){
   e = eff(e);
   var b = BYKEY[e.type]; if(!b) return e.type;
+  if (b.kind==='o') return b.d.name;
   if (b.kind==='g') return b.d.name + ' ' + e.g + (gradeText(e.type, e.g) ? ' – ' + gradeText(e.type, e.g) : '');
   var l = linkOf(e);
   return b.d.name + (b.kind==='p' ? ' +1' : ' −1') + (l ? ' (' + skillName(l.skill).toLowerCase() + ' ' + l.g + ')' : '');
@@ -301,6 +329,7 @@ function evLabel(e){
 function evTag(e){
   e = eff(e);
   var b = BYKEY[e.type]; if(!b) return '';
+  if (b.kind==='o') return '<span class="tag o">'+esc(b.d.name)+'</span> <span class="gtxt">ei vaikuta nettoon</span>';
   if (b.kind==='g') return '<span class="tag g">'+esc(b.d.name)+' '+e.g+'</span> <span class="gtxt">'+esc(gradeText(e.type, e.g))+'</span>';
   var l = linkOf(e);
   return '<span class="tag '+(b.kind==='p'?'p':'m')+'">'+esc(b.d.name)+(b.kind==='p'?' +1':' −1')+'</span>'
@@ -362,7 +391,9 @@ function renderRec(){
   POINTS.forEach(function(s){ var l = LINK[s.k]; h += '<button class="act pt" data-t="'+s.k+'">'+s.label+'<small>+1'+(l ? ' · '+skillName(l.skill).toLowerCase()+' '+l.g : '')+'</small></button>'; });
   h += '</div><div class="secthead">Virheet (−1)</div><div class="multi four">';
   ERRORS.forEach(function(s){ var l = LINK[s.k]; h += '<button class="act er" data-t="'+s.k+'">'+s.label+'<small>−1'+(l ? ' · '+skillName(l.skill).toLowerCase()+' '+l.g : '')+'</small></button>'; });
-  h += '</div></section></div>';
+  h += '</div><div class="opprow"><div class="lbl">Vastustajan virheet<small>ei pelaajaa, ei nettoon</small></div><div class="multi">';
+  OPP.forEach(function(s){ h += '<button class="act opp" data-t="'+s.k+'" data-opp="1" aria-label="'+s.name+' (joukkueen merkintä, ei pelaajaa)"><small>Vastustajan</small>'+s.short+'</button>'; });
+  h += '</div></div></section></div>';
   main.innerHTML = h;
   document.getElementById('players').onclick = function(ev){
     var b = ev.target.closest('.pl'); if (!b) return;
@@ -371,6 +402,7 @@ function renderRec(){
   };
   document.getElementById('actions').onclick = function(ev){
     var b = ev.target.closest('.act'); if (!b) return;
+    if (b.dataset.opp){ recordOpp(b.dataset.t); return; }   // vastustajan virhe: heti, ilman pelaajaa
     if (!selPid){ toast('Valitse ensin pelaaja', 'warn'); return; }
     record(b.dataset.t, b.dataset.g ? +b.dataset.g : null);
   };
@@ -401,7 +433,7 @@ function updRecent(){
   var m = cur(), el = document.getElementById('recent'); if (!m || !el) return;
   var ev = m.events.slice(-4).reverse();
   el.innerHTML = '<b>Viimeisimmät:</b>' + (ev.length ? ev.map(function(e){
-    return '<div>Erä '+e.set+' · '+esc(pLabel(e.num,e.name))+' · '+esc(evLabel(e))+'</div>'; }).join('') : '<div class="zero">Ei vielä kirjauksia</div>');
+    return '<div'+(isOpp(e)?' class="o"':'')+'>Erä '+e.set+' · '+esc(whoPrefix(e, ' · '))+esc(evLabel(e))+'</div>'; }).join('') : '<div class="zero">Ei vielä kirjauksia</div>');
 }
 function record(type, g){
   var m = cur(), p = pById(selPid); if (!m || !p) return;
@@ -415,10 +447,19 @@ function record(type, g){
   selPid = null; updSel(); updRecent();
   flash('✓ ' + pLabel(p.num, p.name) + ': ' + evLabel(e));
 }
+// Vastustajan virhe: kirjataan nykyiseen erään ilman pelaajaa (valittu pelaaja ei saa merkintää)
+function recordOpp(type){
+  var m = cur(); if (!m || !BYKEY[type] || BYKEY[type].kind !== 'o') return;
+  var e = {id:uid(), ts:Date.now(), set:m.set, pid:null, num:'', name:'', type:type, g:null};
+  m.events.push(e);
+  save();
+  selPid = null; updSel(); updRecent();
+  flash('✓ ' + evLabel(e) + ' (erä ' + m.set + ')');
+}
 function undo(){
   var m = cur(); if (!m || !m.events.length){ toast('Ei kumottavaa', 'warn'); return; }
   var e = m.events.pop(); save();
-  toast('Kumottu: ' + pLabel(e.num, e.name) + ' – ' + evLabel(e), 'warn');
+  toast('Kumottu: ' + whoPrefix(e, ' – ') + evLabel(e), 'warn');
   updRecent();
 }
 function setSet(d){
@@ -442,7 +483,7 @@ function emptyStat(){
 }
 function addEv(o, e){
   e = eff(e);
-  var b = BYKEY[e.type]; if (!b) return;
+  var b = BYKEY[e.type]; if (!b || b.kind==='o') return;   // vastustajan virheet eivät kuulu pelaaja-/joukkuetilastoon
   if (b.kind==='g'){ var x=o[e.type]; x.n++; x.sum+=e.g; if (e.g < x.dist.length) x.dist[e.g]++; }
   else {
     o[e.type]++; if (b.kind==='p') o.plus++; else o.minus++;
@@ -455,6 +496,7 @@ function summarize(m, set){
   (m.players||[]).forEach(function(p){ if(!rows[p.id]){ rows[p.id] = {p:{id:p.id,num:p.num,name:p.name}, s:emptyStat()}; order.push(p.id); } });
   m.events.forEach(function(e){
     if (set !== 'all' && e.set !== set) return;
+    if (isOpp(e)) return;
     if (!rows[e.pid]){ rows[e.pid] = {p:{id:e.pid,num:e.num,name:e.name}, s:emptyStat()}; order.push(e.pid); }
     addEv(rows[e.pid].s, e); addEv(team, e);
   });
@@ -505,6 +547,20 @@ function distCells(st){
   });
   return h;
 }
+// Vastustajan virheet -kortti: valitun erän luvut; koko ottelussa erittely erittäin
+function oppHtml(m, set){
+  var sets = set === 'all' ? setsOf(m) : [set];
+  var h = '<div class="card oppcard"><h3>Vastustajan virheet – '+(set==='all' ? 'koko ottelu' : 'erä '+set)+'</h3>'
+    + '<div class="tablewrap"><table id="opptable"><thead><tr><th>Erä</th>';
+  OPP.forEach(function(o){ h += '<th>'+o.plural+'</th>'; });
+  h += '<th>Yhteensä</th></tr></thead><tbody>';
+  var row = function(label, oc, tot){ var r = '<tr'+(tot?' class="tot"':'')+'><td class="nm">'+label+'</td>';
+    OPP.forEach(function(o){ r += '<td class="'+(oc[o.k]?'opv':'zero')+'">'+oc[o.k]+'</td>'; });
+    return r + '<td class="'+(oc.total?'opv':'zero')+'"><b>'+oc.total+'</b></td></tr>'; };
+  sets.forEach(function(n){ h += row('Erä '+n, oppCount(m, n), set !== 'all'); });
+  if (set === 'all') h += row('Koko ottelu', oppCount(m, 'all'), true);
+  return h + '</tbody></table></div><p class="help">Vastustajan virheet kirjataan joukkueelle ilman pelaajaa. Ne eivät vaikuta pelaajien eivätkä joukkueen plussiin, miinuksiin tai nettoon.</p></div>';
+}
 function distHtml(sm, set){
   var h = '<div class="card distcard"><h2>Arvosanajakauma – '+(set==='all' ? 'koko ottelu' : 'erä '+set)+'</h2>'
     + '<p class="help" style="margin-top:-4px">Montako kertaa kukin arvosana annettiin. <b>1 = paras</b> (vihreä), suurin numero = huonoin (punainen). ka = keskiarvo, pienempi on parempi.</p>'
@@ -543,6 +599,7 @@ function renderSum(){
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
     + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Syöttö 1 (ässä / seinille) = ässä +1 ja hyökkäys 1 = hyökkäyspiste +1</b> (myös aiemmin kirjatut syöttö- ja hyökkäysykköset lasketaan pisteiksi). Syöttö 4, vastaanotto 4 ja hyökkäys 3 ovat samalla syöttö-, vastaanotto- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + oppHtml(m, sumSet)
     + distHtml(sm, sumSet)
     + legendHtml()
     + '<div class="card noprint"><h3>Vienti</h3><div class="row">'
@@ -589,6 +646,14 @@ function csvSummary(m, sep){
       out.push(line(a, sep));
     });
   });
+  // Vastustajan virheet omana osionaan loppuun (sama sarakemäärä, jotta tiedosto pysyy yhtenäisenä)
+  var padTo = function(a){ while (a.length < head.length) a.push(''); return a; };
+  out.push(line(padTo([]), sep));
+  out.push(line(padTo(['Ottelu','Päivä','Erä','','Vastustajan virheet'].concat(OPP.map(function(o){ return o.plural; }), ['Yhteensä'])), sep));
+  ['all'].concat(setsOf(m)).forEach(function(set){
+    var oc = oppCount(m, set);
+    out.push(line(padTo(['vs ' + (m.opponent||''), fiDate(m.date), set==='all' ? 'Koko ottelu' : 'Erä '+set, '', 'Vastustajan virheet'].concat(OPP.map(function(o){ return oc[o.k]; }), [oc.total])), sep));
+  });
   return out.join('\r\n');
 }
 function csvEvents(m){
@@ -600,7 +665,7 @@ function csvEvents(m){
     var skill = b.kind==='g' ? b.d.name : l ? skillName(l.skill) : '';
     var grade = b.kind==='g' ? e.g : l ? l.g : '';
     var txt = b.kind==='g' ? gradeText(e.type, e.g) : l ? gradeText(l.skill, l.g) : '';
-    out.push(line([i+1, localDate(e.ts) + ' ' + fiTime(e.ts), e.set, e.num, e.name, b.d.name, skill, grade, txt, b.kind==='p' ? '+1' : b.kind==='e' ? '-1' : ''], ';'));
+    out.push(line([i+1, localDate(e.ts) + ' ' + fiTime(e.ts), e.set, e.num, b.kind==='o' ? 'Vastustaja' : e.name, b.d.name, skill, grade, b.kind==='o' ? 'ei vaikuta nettoon' : txt, b.kind==='p' ? '+1' : b.kind==='e' ? '-1' : ''], ';'));
   });
   return out.join('\r\n');
 }
@@ -763,7 +828,7 @@ function pdfName(m, set){
   return 'lentopallo_' + o + '_' + (m.date||today()) + (set === 'all' ? '' : '_era' + set) + '.pdf';
 }
 function plainLbl(s){ return String(s).replace(/\.&shy;/g, '.\n').replace(/&shy;/g, '-\n'); }
-function buildReportPdf(m, set){
+function buildReportPdf(m, set, rhForce){
   var sm = summarize(m, set), d = new PdfDoc(), L = 28, TOP = 28, FOOT = 22;
   var ctx = { top: TOP + 14, bottom: d.H - TOP - FOOT, newPage: function(){ d.page(); } };
   var setTxt = set === 'all' ? 'Koko ottelu' : 'Erä ' + set;
@@ -772,7 +837,7 @@ function buildReportPdf(m, set){
   d.text('vs ' + (m.opponent || '?') + '  ·  ' + fiDate(m.date) + '  ·  ' + setTxt, L, TOP + 32, 12, {bold:true, color:[0.12,0.23,0.54]});
   var y = TOP + 50;
   var num = function(n, cls){ return {t: String(n), color: n ? (cls === 'p' ? PC.pos : cls === 'e' ? PC.neg : PC.ink) : PC.mute, bold: !!n && !!cls}; };
-  var RH = sm.rows.length <= 12 ? 14 : 13;  // väljempi rivikorkeus, kun kaikki mahtuu yhdelle sivulle
+  var RH = rhForce || (sm.rows.length <= 12 ? 14 : 13);  // väljempi rivikorkeus, kun kaikki mahtuu yhdelle sivulle
   var players = sm.rows.map(function(r){ return {p:r.p, s:r.s, tot:false}; }).concat([{p:{num:'', name:'Joukkue yht.'}, s:sm.team, tot:true}]);
   // Taulukko 1: yhteenveto (samat sarakkeet ja järjestys kuin näytöllä)
   var cols = [{w:26},{w:104}], heads = [{t:'Nro', full:true},{t:'Nimi', full:true, align:'l'}];
@@ -793,8 +858,16 @@ function buildReportPdf(m, set){
   d.text('Yhteenveto – ' + setTxt.toLowerCase(), L, y, 10.5, {bold:true}); y += 6;
   y = pdfTable(d, L, y, {rh:RH, cols:cols, heads:heads, rows:rows1,
     groups:[{t:'',span:2},{t:'Suoritukset: kpl / keskiarvo (1 = paras)',span:SKILLS.length},{t:'Pisteet +1',span:POINTS.length},{t:'Virheet −1',span:ERRORS.length},{t:'Yhteensä',span:3}]}, ctx);
+  // Vastustajan virheet (rivi yhteenvedon alla)
+  var oc = oppCount(m, set), otxt = 'Vastustajan virheet – ' + setTxt.toLowerCase() + ':  ' + OPP.map(function(o){ return o.plural.toLowerCase() + ' ' + oc[o.k]; }).join('  ·  ') + '  ·  yhteensä ' + oc.total;
+  if (set === 'all' && setsOf(m).length > 1) otxt += '     (' + setsOf(m).map(function(n){ var c = oppCount(m, n); return 'Erä ' + n + ': ' + OPP.map(function(o){ return c[o.k]; }).join('+') + ' = ' + c.total; }).join(';  ') + ')';
+  if (y + 12 > ctx.bottom){ d.page(); y = ctx.top; }
+  d.rect(L, y - 1, d.W - 2*L, 13, [0.88,0.94,1]);
+  d.text(otxt, L, y + 8.5, 8.5, {bold:true, w:d.W - 2*L - 100, color:[0.05,0.3,0.55]});
+  d.text('ei vaikuta nettoon', d.W - L - 100, y + 8.5, 7.5, {w:100, align:'r', color:[0.3,0.33,0.4]});
+  y += 14;
   // Taulukko 2: arvosanajakauma
-  y += 10;
+  y += 15;
   var cols2 = [{w:26},{w:104}], heads2 = [{t:'Nro', full:true},{t:'Nimi', full:true, align:'l'}], groups2 = [{t:'',span:2}];
   var rest = d.W - 2*L - 130, nc = 0; SKILLS.forEach(function(k){ nc += k.max + 2; });
   var cw = rest / nc;
@@ -830,6 +903,7 @@ function buildReportPdf(m, set){
     d.text('1 = paras. Syöttö 1 = ässä +1, Hyökkäys 1 = hyökkäyspiste +1, S4/V4/H3 = virhe −1. Netto = pisteet (+1) − virheet (−1).', L, d.H - TOP - 3, 8, {color:[0.3,0.33,0.4]});
     d.text(stamp + '   ·   Sivu ' + (i+1) + '/' + d.pages.length, d.W - L - 200, d.H - TOP - 3, 8, {w:200, align:'r', color:[0.3,0.33,0.4]});
   });
+  if (!rhForce && RH > 13 && d.pages.length > 1) return buildReportPdf(m, set, 13);   // tiivistetään, jotta mahtuu yhdelle sivulle
   return d.bytes('Lentopallotilastot vs ' + (m.opponent||'') + ' ' + fiDate(m.date) + ' – ' + setTxt);
 }
 // Jaa PDF: luodaan synkronisesti ja kutsutaan navigator.sharea suoraan napin painalluksesta (iPadin vaatimus).
@@ -868,7 +942,7 @@ function renderLog(){
   if (!m.events.length) h += '<div class="empty">Ei kirjauksia</div>';
   for (var i = m.events.length-1; i >= 0; i--){
     var e = m.events[i];
-    h += '<div class="logrow"><span class="t">'+fiTime(e.ts)+'<br>Erä '+e.set+'</span><span class="what"><b>'+esc(pLabel(e.num,e.name))+'</b> '+evTag(e)+'</span>'
+    h += '<div class="logrow"><span class="t">'+fiTime(e.ts)+'<br>Erä '+e.set+'</span><span class="what">'+(evWho(e) ? '<b>'+esc(evWho(e))+'</b> ' : '')+evTag(e)+'</span>'
       + '<button class="del" data-id="'+e.id+'">Poista</button></div>';
   }
   main.innerHTML = h + '</div></div>';
@@ -878,7 +952,7 @@ function renderLog(){
     var idx = -1; m.events.forEach(function(e,i){ if (e.id === b.dataset.id) idx = i; });
     if (idx < 0) return;
     var e = m.events[idx];
-    ask('Poistetaanko kirjaus: ' + pLabel(e.num,e.name) + ' – ' + evLabel(e) + '?', 'Poista', function(){
+    ask('Poistetaanko kirjaus: ' + whoPrefix(e, ' – ') + evLabel(e) + '?', 'Poista', function(){
       m.events.splice(idx, 1); save(); toast('Kirjaus poistettu', 'warn'); renderLog();
     });
   };
