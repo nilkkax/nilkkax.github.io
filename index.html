@@ -67,6 +67,27 @@ main{padding:12px}
 .pl .badge.lib{background:#0f766e}
 .pl .badge{font-size:12px;padding:1px 5px;top:4px;right:4px;letter-spacing:.02em}
 .pl.on{background:var(--blue);border-color:var(--sel);box-shadow:0 0 0 4px var(--sel);color:#fff}
+/* Pitkä painallus pelaajaan = roolin vaihto (v12): ei iOS-tekstinvalintaa / -valikkoa */
+.pl,.pl *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.pl{transition:transform .12s} .pl.hold{transform:scale(.96);border-color:var(--blue)}
+.pgrp{position:relative}
+.ghint{position:absolute;top:0;right:2px;font-size:12px;line-height:16px;height:16px;color:#8a94a6;font-weight:600;white-space:nowrap;pointer-events:none}
+#lphint{font-size:12px;line-height:16px;color:#8a94a6;font-weight:600;margin:4px 0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rolesheet{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:65;display:flex;align-items:center;justify-content:center;padding:20px}
+#rolesheet .box{background:#fff;border-radius:20px;padding:24px;max-width:620px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+#rolesheet .who{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
+#rolesheet .who .n{font-size:48px;font-weight:900;line-height:1}
+#rolesheet .who .nm{font-size:28px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#rolesheet .sub{color:var(--muted);font-size:18px;margin-bottom:16px}
+#rolesheet .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#rolesheet .rs{min-height:92px;border-radius:14px;font-size:25px;font-weight:800;background:#eef1f6;border:3px solid var(--line);color:var(--ink);padding:6px 10px;line-height:1.15}
+#rolesheet .rs small{display:block;font-size:15px;font-weight:700;margin-top:2px}
+#rolesheet .rs.on{background:var(--blue);border-color:#1e3a8a;color:#fff}
+#rolesheet .rs.passari.on{background:var(--amber);border-color:#92400e}
+#rolesheet .rs.libero.on{background:#0f766e;border-color:#134e4a}
+#rolesheet .bot{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+#rolesheet .rs.none{min-height:72px;font-size:22px}
+#rolesheet .cancel{min-height:72px;border-radius:14px;font-size:24px;font-weight:800;background:#d7dde7;color:var(--ink)}
 #actions{position:relative}
 #actions.off .act{opacity:.35}
 #selinfo{font-size:22px;font-weight:800;height:62px;overflow:hidden;line-height:1.12;display:flex;align-items:center;padding:0 14px;border-radius:12px;background:#fff;border:3px dashed var(--line);margin-bottom:10px}
@@ -224,6 +245,7 @@ td.net{font-size:22px;font-weight:900}
 #pdfrow .pdfnote{color:var(--muted);font-size:18px}
 .printonly{display:none}
 @media print{
+  #rolesheet,#lphint,.ghint{display:none !important}
   @page{size:A4 landscape;margin:9mm}
   html,body{background:#fff !important;font-size:11pt}
   body{padding:0}
@@ -259,6 +281,7 @@ td.net{font-size:22px;font-weight:900}
 </header>
 <main id="main"></main>
 <div id="toast"></div>
+<div id="rolesheet" class="hidden" role="dialog" aria-modal="true" aria-label="Vaihda rooli"></div>
 <div id="modal" class="hidden"><div class="box"><div id="mtext"></div><div class="row"><button class="btn gray" id="mno">Peruuta</button><button class="btn red" id="myes">OK</button></div></div></div>
 
 <script>
@@ -439,7 +462,7 @@ document.getElementById('tabs').addEventListener('click', function(ev){
   var b = ev.target.closest('.tab'); if (b) go(b.dataset.v);
 });
 function go(v){
-  view = v;
+  view = v; if (typeof closeRoleSheet === 'function') closeRoleSheet();
   if (v !== 'kirjaa') selPid = null;
   var tabs = document.querySelectorAll('.tab');
   for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].dataset.v === v);
@@ -465,10 +488,14 @@ function renderRec(){
   var rowsP = function(c){ var t = 0; RBLOCKS.forEach(function(bl){ t += Math.ceil(ros.filter(function(p){ return bl.indexOf(roleOf(p)) >= 0; }).length / c); }); return t; };
   var c6 = anyRole && nb > 1 && rowsP(5) > 3 && rowsP(6) < rowsP(5);
   h = h.replace('<div id="players">', '<div id="players" class="'+(anyRole && nb > 1 ? 'grouped' : '')+(rowsL > 4 ? ' many' : '')+(c6 ? ' c6' : '')+'">');
+  // Vihje pitkästä painalluksesta: ryhmitellyssä näkymässä viimeisen ryhmän otsikkorivin oikeaan reunaan (ei vie lisätilaa),
+  // muuten oma pieni rivi pelaajien alle
+  var HINT = 'Pidä pelaajaa painettuna vaihtaaksesi roolin', grouped = anyRole && nb > 1, bi = 0;
   RBLOCKS.forEach(function(bl){
     var ps = ros.filter(function(p){ return bl.indexOf(roleOf(p)) >= 0; }); if (!ps.length) return;
     var lbl = bl.filter(function(r){ return ps.some(function(p){ return roleOf(p) === r; }); }).map(rolePlural).join(' · ');
-    h += '<div class="pgrp" data-roles="'+bl.join(',')+'">'+(anyRole ? '<div class="glbl">'+esc(lbl)+'</div>' : '')+'<div class="pgrid">';
+    bi++;
+    h += '<div class="pgrp" data-roles="'+bl.join(',')+'">'+(anyRole ? '<div class="glbl">'+esc(lbl)+'</div>' : '')+(grouped && bi === nb ? '<div class="ghint hint">'+HINT+'</div>' : '')+'<div class="pgrid">';
     ps.forEach(function(p){
       var r = roleOf(p);
       h += '<button class="pl'+(p.id===selPid?' on':'')+'" data-pid="'+p.id+'" data-role="'+r+'">'+(r==='passari'?'<span class="badge">PASSARI</span>':r==='libero'?'<span class="badge lib">LIBERO</span>':'')
@@ -476,7 +503,7 @@ function renderRec(){
     });
     h += '</div></div>';
   });
-  h += '</div></section><div id="recent"'+(rowsL > 4 ? ' class="many"' : '')+'></div><section id="actions"><div id="selinfo"></div>';
+  h += '</div>'+(grouped ? '' : '<div id="lphint" class="hint">'+HINT+'</div>')+'</section><div id="recent"'+(rowsL > 4 ? ' class="many"' : '')+'></div><section id="actions"><div id="selinfo"></div>';
   SKILLS.forEach(function(s){
     h += '<div class="skill '+s.k+'"><div class="lbl">'+s.name+'<small>1 = paras</small></div><div class="grades" style="grid-template-columns:repeat('+s.max+',1fr)">';
     for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+(GRADE2ERR[s.k+g]?', virhe −1':'')+(GRADE2PT[s.k+g]?', '+BYKEY[GRADE2PT[s.k+g]].d.name.toLowerCase()+' +1':'')+'">'+(GRADE2ERR[s.k+g] ? '<span class="em">−1</span>' : '')+(GRADE2PT[s.k+g] ? '<span class="em ep">+1</span>' : '')+'<span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
@@ -490,11 +517,14 @@ function renderRec(){
   OPP.forEach(function(s){ h += '<button class="act opp" data-t="'+s.k+'" data-opp="1" aria-label="'+s.name+' (joukkueen merkintä, ei pelaajaa)"><small>Vastustajan</small>'+s.short+'</button>'; });
   h += '</div></div></section></div>';
   main.innerHTML = h;
-  document.getElementById('players').onclick = function(ev){
+  var pl = document.getElementById('players');
+  pl.onclick = function(ev){
     var b = ev.target.closest('.pl'); if (!b) return;
+    if (lp.fired){ lp.fired = false; ev.preventDefault(); return; }   // pitkä painallus: ei valintaa
     selPid = (selPid === b.dataset.pid) ? null : b.dataset.pid;
     updSel();
   };
+  bindLongPress(pl);
   document.getElementById('actions').onclick = function(ev){
     var b = ev.target.closest('.act'); if (!b) return;
     if (b.dataset.opp){ recordOpp(b.dataset.t); return; }   // vastustajan virhe: heti, ilman pelaajaa
@@ -506,6 +536,53 @@ function renderRec(){
   document.getElementById('setplus').onclick = function(){ setSet(1); };
   updSel(); updRecent();
 }
+// ---------- Pitkä painallus pelaajaan: roolin pikavaihto (v12) ----------
+var LP_MS = 500, lp = {t:null, b:null, x:0, y:0, fired:false};
+function lpCancel(){ if (lp.t){ clearTimeout(lp.t); lp.t = null; } if (lp.b){ lp.b.classList.remove('hold'); lp.b = null; } }
+function bindLongPress(el){
+  el.addEventListener('pointerdown', function(ev){
+    var b = ev.target.closest('.pl'); lpCancel(); lp.fired = false;
+    if (!b || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+    lp.b = b; lp.x = ev.clientX; lp.y = ev.clientY;
+    lp.t = setTimeout(function(){
+      var pid = lp.b && lp.b.dataset.pid; lp.t = null; lpCancel();
+      if (!pid) return;
+      lp.fired = true;
+      if (navigator.vibrate) try { navigator.vibrate(25); } catch(e){}
+      openRoleSheet(pid);
+    }, LP_MS);
+    setTimeout(function(){ if (lp.t && lp.b === b) b.classList.add('hold'); }, 150);
+  });
+  el.addEventListener('pointermove', function(ev){ if (lp.t && (Math.abs(ev.clientX - lp.x) > 12 || Math.abs(ev.clientY - lp.y) > 12)) lpCancel(); });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(t){ el.addEventListener(t, lpCancel); });
+  el.addEventListener('contextmenu', function(ev){ if (ev.target.closest('.pl')) ev.preventDefault(); });
+  el.addEventListener('selectstart', function(ev){ ev.preventDefault(); });
+}
+function closeRoleSheet(){ var rs = document.getElementById('rolesheet'); rs.classList.add('hidden'); rs.innerHTML = ''; }
+function openRoleSheet(pid){
+  var p = pById(pid); if (!p) return;
+  var r0 = roleOf(p), rs = document.getElementById('rolesheet'), armed = false;
+  var h = '<div class="box" data-pid="'+esc(p.id)+'"><div class="who"><span class="n">'+(p.num!==''&&p.num!=null?'#'+esc(p.num):'')+'</span><span class="nm">'+esc(p.name||'')+'</span></div>'
+    + '<div class="sub">Valitse rooli – pelaaja siirtyy heti oikeaan ryhmään. Tilastot eivät muutu.</div><div class="rgrid">';
+  ROLES.forEach(function(r){ h += '<button class="rs '+r.k+(r0===r.k?' on':'')+'" data-r="'+r.k+'">'+r.name+(r0===r.k?'<small>✓ nykyinen</small>':'')+'</button>'; });
+  h += '</div><div class="bot"><button class="rs none'+(r0===''?' on':'')+'" data-r="">Ei roolia'+(r0===''?'<small>✓ nykyinen</small>':'')+'</button>'
+    + '<button class="cancel" id="rscancel">Peruuta</button></div></div>';
+  rs.innerHTML = h; rs.classList.remove('hidden');
+  // Sormen nosto pitkän painalluksen jälkeen ei saa "napauttaa" ponnahdusikkunan nappia: vain uusi painallus kelpaa
+  rs.onpointerdown = function(){ armed = true; };
+  rs.oncontextmenu = function(ev){ ev.preventDefault(); };
+  rs.onclick = function(ev){
+    if (!armed) return;
+    if (ev.target === rs || ev.target.closest('#rscancel')){ closeRoleSheet(); return; }
+    var b = ev.target.closest('.rs'); if (!b) return;
+    var r = b.dataset.r; closeRoleSheet();
+    if (r === roleOf(p)) return;                     // sama rooli: ei muutosta
+    setRole(p.id, r);
+    toast(pLabel(p.num, p.name) + ' → ' + (r ? ROLES[roleIdx(r)].name : 'ei roolia'));
+    if (view === 'kirjaa') renderRec();
+  };
+}
+
 var ft = null;
 function flash(msg){
   var si = document.getElementById('selinfo'); if (!si) return;
