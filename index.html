@@ -53,11 +53,19 @@ main{padding:12px}
 #setbar .lbl{font-size:26px;font-weight:800;min-width:110px;text-align:center}
 .sq{min-width:64px;min-height:62px;border-radius:12px;font-size:30px;font-weight:800;background:#d7dde7}
 #undo{margin-left:auto;background:var(--amber);color:#fff;min-height:62px;padding:0 22px;border-radius:12px;font-size:23px;font-weight:800}
-#players{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+#players{display:flex;flex-direction:column}
+/* Pelaajaryhmät roolin mukaan (v11): jokainen ryhmä omalle rivilleen, selvä väli ryhmien välissä */
+.pgrp + .pgrp{margin-top:4px}
+/* ryhmän nimi on itse ryhmien välisessä raossa (väli ~22px), ensimmäisellä ryhmällä ei erillistä otsikkoriviä */
+.pgrp .glbl{font-size:13px;font-weight:800;line-height:16px;height:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 2px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pgrp:first-child .glbl{display:none}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .pl{position:relative;background:#fff;border:3px solid var(--line);border-radius:var(--r);min-height:112px;padding:6px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .pl .n{font-size:44px;font-weight:900;line-height:1}
 .pl .nm{font-size:20px;font-weight:600;margin-top:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pl .badge{position:absolute;top:5px;right:6px;background:var(--amber);color:#fff;font-size:15px;font-weight:800;border-radius:8px;padding:2px 7px}
+.pl .badge.lib{background:#0f766e}
+.pl .badge{font-size:12px;padding:1px 5px;top:4px;right:4px;letter-spacing:.02em}
 .pl.on{background:var(--blue);border-color:var(--sel);box-shadow:0 0 0 4px var(--sel);color:#fff}
 #actions{position:relative}
 #actions.off .act{opacity:.35}
@@ -145,7 +153,18 @@ td.net{font-size:22px;font-weight:900}
 .tag.p{background:#dcfce7;color:var(--green)} .tag.m{background:#fee2e2;color:var(--red)} .tag.g{background:#dbe6ff;color:var(--blue-d)}
 
 /* Pelaajat */
-.prow{display:grid;grid-template-columns:110px 1fr 190px 70px;gap:10px;align-items:center;margin-bottom:10px}
+.prow{display:grid;grid-template-columns:90px minmax(140px,1fr) 486px 132px 62px;grid-template-areas:'num name role ord x';gap:8px;align-items:center;margin-bottom:10px}
+.prow > .pnum{grid-area:num} .prow > .pname{grid-area:name} .prow > .roles{grid-area:role} .prow > .ord{grid-area:ord} .prow > .x{grid-area:x}
+.prow.hd > div{font-weight:800;font-size:18px;color:var(--muted)}
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.rb{min-height:62px;border-radius:12px;background:#eef1f6;border:3px solid var(--line);font-size:17px;font-weight:800;line-height:1.1;padding:2px 4px;-webkit-hyphens:manual;hyphens:manual;color:var(--ink)}
+.rb.on{background:var(--blue);border-color:var(--blue-d);color:#fff}
+.rb.on.passari{background:var(--amber);border-color:#7c3d06}
+.rb.on.libero{background:#0f766e;border-color:#064e45}
+.ord{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ord button{min-height:62px;border-radius:12px;background:#dbe6ff;border:3px solid #9db4f0;color:var(--blue-d);font-size:30px;font-weight:900;line-height:1}
+.ord button:disabled{opacity:.25}
+.rgrp{font-size:20px;font-weight:800;color:var(--blue-d);margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #c3cad6}
 .prow input[type=text],.prow input[type=number],.field input{width:100%;min-height:62px;border:3px solid var(--line);border-radius:12px;padding:0 14px;background:#fff;color:var(--ink)}
 .prow input:focus,.field input:focus{outline:none;border-color:var(--blue)}
 .chk{display:flex;align-items:center;gap:10px;min-height:62px;padding:0 12px;border-radius:12px;background:#f3f4f6;border:3px solid var(--line);font-weight:700}
@@ -172,13 +191,34 @@ td.net{font-size:22px;font-weight:900}
 @media (min-width:901px){ #toast{left:24px;transform:none;max-width:38%} }
 @media (max-width:900px){
   #rec{grid-template-columns:1fr;grid-template-areas:'left' 'actions' 'recent';grid-template-rows:auto}
-  #players{grid-template-columns:repeat(4,1fr)}
+  .pgrid{grid-template-columns:repeat(5,1fr)}
   .pl{min-height:84px}
-  .prow{grid-template-columns:90px 1fr 160px 64px}
+  .prow{grid-template-columns:80px 1fr 132px 62px;grid-template-areas:'num name ord x' 'role role role role';margin-bottom:16px}
+  .prow.hd{grid-template-areas:'num name ord x'} .prow.hd .hrole{display:none}
 }
 @media (orientation:landscape) and (max-height:900px){
   .pl{min-height:104px}
+  #players.many .pl{min-height:100px}
+  /* paljon pelaajarivejä: Viimeisimmät näyttää vaakatasossa 2 uusinta kirjausta, otsikko vasemmalla */
+  #recent.many{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;padding:6px 12px}
+  #recent.many b{grid-column:1;grid-row:1 / span 2;padding-top:3px}
+  #recent.many div{grid-column:2}
+  #recent.many div:nth-child(n+4){display:none}
 }
+@media (max-width:900px){
+  #players.grouped .pl{padding:3px 6px} #players.grouped .pl .n{font-size:40px}
+  #players.grouped .pgrp + .pgrp{margin-top:2px} #players.grouped .glbl{margin-bottom:1px}
+  #players.c6 .pgrid{grid-template-columns:repeat(6,1fr);gap:8px} #players.c6 .pl .nm{font-size:18px}
+}
+/* Tehoprosentit (v11) */
+#efftable{font-size:19px}
+#efftable th{font-size:16px;padding:6px 4px}
+#efftable th.grp{font-size:18px}
+#efftable .s0{border-left:3px solid #4b5563}
+#efftable td.kpl{background:#f6f7f9;color:var(--muted);font-weight:700;font-size:17px}
+#efftable td.pc{font-size:22px;font-weight:800;white-space:nowrap;min-width:64px}
+#efftable td.nm{font-size:20px}
+#efftable tr.tot td.kpl{background:#fff0bf}
 #pdfrow{margin:-2px 0 12px}
 #pdfrow .btn.big{min-width:220px}
 #pdfrow .pdfnote{color:var(--muted);font-size:18px}
@@ -195,6 +235,7 @@ td.net{font-size:22px;font-weight:900}
   h2{font-size:15pt;margin:0 0 6px} h3{font-size:12pt}
   table{font-size:9pt} th{font-size:8pt} th.grp{font-size:8.5pt}
   th,td{padding:2px 3px} td .ka{font-size:7.5pt} td.net{font-size:10pt}
+  #efftable{font-size:9pt} #efftable th{font-size:8pt} #efftable th.grp{font-size:8.5pt} #efftable td.pc,#efftable td.nm{font-size:9.5pt} #efftable td.kpl{font-size:8pt} #efftable td.pc{min-width:0}
   #disttable{font-size:9pt} #disttable th.sk{font-size:9pt} #disttable th.g{font-size:9pt;min-width:0} #disttable th,#disttable td{padding:2px 2px}
   .help{font-size:8pt;margin:3px 0 6px}
   .legend{font-size:8.5pt;gap:2px 16px}
@@ -300,7 +341,7 @@ var view = null, selPid = null, sumSet = 'all';
 
 function blank(){ return {roster:[], matches:[], currentId:null}; }
 function load(){
-  try { var o = JSON.parse(localStorage.getItem(KEY)); if (o && Array.isArray(o.roster) && Array.isArray(o.matches)) return o; } catch(e) {}
+  try { var o = JSON.parse(localStorage.getItem(KEY)); if (o && Array.isArray(o.roster) && Array.isArray(o.matches)) return migrate(o); } catch(e) {}
   return blank();
 }
 function save(){
@@ -316,7 +357,47 @@ function fiDate(iso){ if(!iso) return ''; var p=iso.split('-'); return p.length=
 function fiTime(ts){ var d=new Date(ts); return pad(d.getHours())+'.'+pad(d.getMinutes())+'.'+pad(d.getSeconds()); }
 function localDate(ts){ var d=new Date(ts); return d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear(); }
 function dec(x){ return x.toFixed(2).replace('.', ','); }
-function sortedRoster(){ return S.roster.slice().sort(function(a,b){ return (parseInt(a.num,10)||999) - (parseInt(b.num,10)||999) || String(a.name).localeCompare(String(b.name),'fi'); }); }
+function byNum(a,b){ return (parseInt(a.num,10)||999) - (parseInt(b.num,10)||999) || String(a.name).localeCompare(String(b.name),'fi'); }
+// ---------- Roolit ja järjestys (v11) ----------
+// Pelaajalla voi olla rooli (p.role) ja järjestysnumero (p.ord). Vanhat pelaajat: ei roolia (passari-rasti = Passari),
+// järjestys numeron mukaan. Ilman roolia olevat pelaajat menevät viimeiseen ryhmään "Muut".
+var ROLES = [
+  {k:'passari', name:'Passari', plural:'Passarit'},
+  {k:'libero',  name:'Libero', plural:'Liberot'},
+  {k:'yleis',   name:'Yleispelaaja', label:'Yleis&shy;pelaaja', plural:'Yleispelaajat'},
+  {k:'keskari', name:'Keskari / Hakkuri', label:'Keskari / Hakkuri', plural:'Keskarit / Hakkurit'}
+];
+// Kirjausnäkymän ryhmät: passarit ensimmäisellä rivillä, liberot + yleispelaajat yhdessä (libero ensin), keskarit/hakkurit, muut
+var RBLOCKS = [['passari'], ['libero','yleis'], ['keskari'], ['']];
+function roleOf(p){ var r = p && p.role; for (var i=0;i<ROLES.length;i++) if (ROLES[i].k === r) return r; return (p && p.setter) ? 'passari' : ''; }
+function roleIdx(r){ for (var i=0;i<ROLES.length;i++) if (ROLES[i].k === r) return i; return ROLES.length; }
+function rolePlural(r){ var i = roleIdx(r); return i < ROLES.length ? ROLES[i].plural : 'Muut'; }
+function maxOrd(){ var mx = 0; S.roster.forEach(function(p){ if (typeof p.ord === 'number' && p.ord > mx) mx = p.ord; }); return mx; }
+// Taaksepäin yhteensopivuus: puuttuva ord annetaan numerojärjestyksessä (sama järjestys kuin ennen v11:tä)
+function migrate(o){
+  if (!o || !Array.isArray(o.roster)) return o;
+  var mx = 0; o.roster.forEach(function(p){ if (typeof p.ord === 'number' && isFinite(p.ord) && p.ord > mx) mx = p.ord; });
+  o.roster.filter(function(p){ return !(typeof p.ord === 'number' && isFinite(p.ord)); }).sort(byNum).forEach(function(p){ p.ord = ++mx; });
+  return o;
+}
+function sortedRoster(){ return S.roster.slice().sort(function(a,b){ return roleIdx(roleOf(a)) - roleIdx(roleOf(b)) || (a.ord||0) - (b.ord||0) || byNum(a,b); }); }
+// Siirto ylös/alas oman ryhmän sisällä (dir -1 = ylös, +1 = alas)
+function movePlayer(pid, dir){
+  var p = pById(pid); if (!p) return false;
+  var grp = sortedRoster().filter(function(x){ return roleOf(x) === roleOf(p); });
+  var i = grp.indexOf(p), j = i + dir; if (i < 0 || j < 0 || j >= grp.length) return false;
+  var o = p.ord; p.ord = grp[j].ord; grp[j].ord = o;
+  if (p.ord === grp[j].ord){ grp.forEach(function(x, k){ x.ord = k + 1 + maxOrd(); }); return movePlayer(pid, dir); }
+  save(); return true;
+}
+function setRole(pid, r){
+  var p = pById(pid); if (!p) return;
+  if (roleOf(p) === r) r = '';                 // uudelleen napautus poistaa roolin
+  p.role = r; p.setter = (r === 'passari');    // passari-tieto pysyy samana kuin ennen (Passi-rivin korostus)
+  p.ord = maxOrd() + 1;                        // uuden ryhmän viimeiseksi
+  var m = cur(); if (m) syncMatchPlayerIfPresent(m, p);
+  save();
+}
 function pById(pid){ for (var i=0;i<S.roster.length;i++) if (S.roster[i].id===pid) return S.roster[i]; return null; }
 function evLabel(e){
   e = eff(e);
@@ -377,11 +458,25 @@ function renderRec(){
     + '<button class="sq" id="setminus" aria-label="Edellinen erä">−</button><div class="lbl" id="setlbl">Erä '+m.set+'</div>'
     + '<button class="sq" id="setplus" aria-label="Seuraava erä">+</button>'
     + '<button id="undo">↶ Kumoa</button></div><div id="players">';
-  sortedRoster().forEach(function(p){
-    h += '<button class="pl'+(p.id===selPid?' on':'')+'" data-pid="'+p.id+'">'+(p.setter?'<span class="badge">PASSARI</span>':'')
-      + '<span class="n">'+esc(p.num)+'</span><span class="nm">'+esc(p.name)+'</span></button>';
+  var ros = sortedRoster(), anyRole = ros.some(function(p){ return roleOf(p) !== ''; }), rowsL = 0, nb = 0;
+  RBLOCKS.forEach(function(bl){ var c = ros.filter(function(p){ return bl.indexOf(roleOf(p)) >= 0; }).length; if (c){ rowsL += Math.ceil(c/3); nb++; } });
+  // Vaakatasossa yli 4 riviä: napit hieman matalammiksi (104 → 100 px), jotta 12 pelaajaa mahtuu ilman vieritystä
+  // Pystyasennossa 5 saraketta; jos riviä tulisi yli 3, käytetään 6 saraketta (kaikki napit mahtuvat ruutuun)
+  var rowsP = function(c){ var t = 0; RBLOCKS.forEach(function(bl){ t += Math.ceil(ros.filter(function(p){ return bl.indexOf(roleOf(p)) >= 0; }).length / c); }); return t; };
+  var c6 = anyRole && nb > 1 && rowsP(5) > 3 && rowsP(6) < rowsP(5);
+  h = h.replace('<div id="players">', '<div id="players" class="'+(anyRole && nb > 1 ? 'grouped' : '')+(rowsL > 4 ? ' many' : '')+(c6 ? ' c6' : '')+'">');
+  RBLOCKS.forEach(function(bl){
+    var ps = ros.filter(function(p){ return bl.indexOf(roleOf(p)) >= 0; }); if (!ps.length) return;
+    var lbl = bl.filter(function(r){ return ps.some(function(p){ return roleOf(p) === r; }); }).map(rolePlural).join(' · ');
+    h += '<div class="pgrp" data-roles="'+bl.join(',')+'">'+(anyRole ? '<div class="glbl">'+esc(lbl)+'</div>' : '')+'<div class="pgrid">';
+    ps.forEach(function(p){
+      var r = roleOf(p);
+      h += '<button class="pl'+(p.id===selPid?' on':'')+'" data-pid="'+p.id+'" data-role="'+r+'">'+(r==='passari'?'<span class="badge">PASSARI</span>':r==='libero'?'<span class="badge lib">LIBERO</span>':'')
+        + '<span class="n">'+esc(p.num)+'</span><span class="nm">'+esc(p.name)+'</span></button>';
+    });
+    h += '</div></div>';
   });
-  h += '</div></section><div id="recent"></div><section id="actions"><div id="selinfo"></div>';
+  h += '</div></section><div id="recent"'+(rowsL > 4 ? ' class="many"' : '')+'></div><section id="actions"><div id="selinfo"></div>';
   SKILLS.forEach(function(s){
     h += '<div class="skill '+s.k+'"><div class="lbl">'+s.name+'<small>1 = paras</small></div><div class="grades" style="grid-template-columns:repeat('+s.max+',1fr)">';
     for (var g=1; g<=s.max; g++) h += '<button class="act gr '+gradeCls(g, s.max)+'" data-t="'+s.k+'" data-g="'+g+'" aria-label="'+s.name+' '+g+': '+esc(s.labels[g-1])+(g===1?' (paras)':g===s.max?' (huonoin)':'')+(GRADE2ERR[s.k+g]?', virhe −1':'')+(GRADE2PT[s.k+g]?', '+BYKEY[GRADE2PT[s.k+g]].d.name.toLowerCase()+' +1':'')+'">'+(GRADE2ERR[s.k+g] ? '<span class="em">−1</span>' : '')+(GRADE2PT[s.k+g] ? '<span class="em ep">+1</span>' : '')+'<span class="gn">'+g+'</span><span class="gl">'+esc(s.labels[g-1]).replace(/(\d+–\d+ m)$/, '<span style="white-space:nowrap">$1</span>')+'</span></button>';
@@ -424,7 +519,7 @@ function updSel(){
   var p = selPid ? pById(selPid) : null;
   var si = document.getElementById('selinfo');
   si.className = p ? 'on' : '';
-  si.textContent = p ? ('Valittu: ' + pLabel(p.num, p.name) + (p.setter ? ' (passari)' : '')) : '1. Valitse pelaaja  →  2. Valitse suoritus';
+  si.textContent = p ? ('Valittu: ' + pLabel(p.num, p.name) + (roleOf(p) ? ' (' + ROLES[roleIdx(roleOf(p))].name.toLowerCase() + ')' : '')) : '1. Valitse pelaaja  →  2. Valitse suoritus';
   document.getElementById('actions').classList.toggle('off', !p);
   var ps = document.querySelector('.skill.P');
   if (ps){ ps.classList.toggle('hi', !!(p && p.setter)); ps.classList.toggle('dim', !!(p && !p.setter)); }
@@ -504,6 +599,24 @@ function summarize(m, set){
   list.sort(function(a,b){ return (parseInt(a.p.num,10)||999)-(parseInt(b.p.num,10)||999); });
   return {rows:list, team:team};
 }
+// ---------- Tehoprosentit (v11) ----------
+// Lasketaan arvosanajakaumasta (eff() + yhdistetyt merkinnät), joten myös vanhat ottelut saavat prosentit takautuvasti.
+// d = jakauma (d[1] = arvosana 1 kpl ...), n = suoritukset yhteensä. c: t = teho (+ vihreä / − punainen), e = virhe (punainen).
+var EFF = [
+  {sk:'S', t:'Teho %',         csv:'Syöttö teho %',            c:'t', f:function(d, n){ return d[1] - d[4]; }},
+  {sk:'S', t:'Onnistu&shy;minen %', csv:'Syöttö onnistuminen %', c:'',  f:function(d, n){ return n - d[4]; }},
+  {sk:'V', t:'Plus %',         csv:'Vastaanotto plus %',       c:'',  f:function(d, n){ return d[1] + d[2]; }},
+  {sk:'V', t:'Virhe %',        csv:'Vastaanotto virhe %',      c:'e', f:function(d, n){ return d[4]; }},
+  {sk:'P', t:'Passi 1 %',      csv:'Passi 1 %',                c:'',  f:function(d, n){ return d[1]; }},
+  {sk:'H', t:'Teho %',         csv:'Hyökkäys teho %',          c:'t', f:function(d, n){ return d[1] - d[3]; }},
+  {sk:'H', t:'Piste %',        csv:'Hyökkäys piste %',         c:'',  f:function(d, n){ return d[1]; }}
+];
+var EFF_HELP = 'Teho = (1:t − virheet) / kaikki suoritukset. Syötön onnistuminen = ei virhettä, vastaanoton plus = arvosanat 1–2, passi 1 = hyvät passit, hyökkäyksen piste = hyökkäys 1. – = ei suorituksia.';
+// Prosentti kokonaislukuna (pyöristys symmetrisesti nollasta poispäin), null kun suorituksia 0
+function pctOf(a, n){ if (!n) return null; var x = 100 * a / n; return (x < 0 ? -1 : 1) * Math.round(Math.abs(x)); }
+function effStats(st){ return EFF.map(function(e){ var x = st[e.sk]; return pctOf(e.f(x.dist, x.n), x.n); }); }
+function pctTxt(v, sp){ return v == null ? '–' : (v < 0 ? '−' : '') + Math.abs(v) + (sp || ' ') + '%'; }
+function effColor(e, v){ if (v == null || v === 0) return ''; if (e.c === 't') return v > 0 ? 'pos' : 'neg'; if (e.c === 'e') return 'neg'; return ''; }
 function setsOf(m){
   var mx = m.set || 1; m.events.forEach(function(e){ if (e.set > mx) mx = e.set; });
   var a=[]; for (var i=1;i<=mx;i++) a.push(i); return a;
@@ -561,6 +674,30 @@ function oppHtml(m, set){
   if (set === 'all') h += row('Koko ottelu', oppCount(m, 'all'), true);
   return h + '</tbody></table></div><p class="help">Vastustajan virheet kirjataan joukkueelle ilman pelaajaa. Ne eivät vaikuta pelaajien eivätkä joukkueen plussiin, miinuksiin tai nettoon.</p></div>';
 }
+// Tehoprosenttitaulukko: Nro + Nimi vasemmalla, prosentit oikealla, joukkue viimeisenä
+function effCells(st){
+  var v = effStats(st), h = '';
+  SKILLS.forEach(function(k){
+    var n = st[k.k].n;
+    h += '<td class="kpl s0'+(n?'':' zero')+'">'+(n || '–')+'</td>';
+    EFF.forEach(function(e, i){ if (e.sk !== k.k) return; var c = effColor(e, v[i]);
+      h += '<td class="pc'+(v[i] == null ? ' zero' : c ? ' '+c : '')+'">'+pctTxt(v[i], '&nbsp;')+'</td>'; });
+  });
+  return h;
+}
+function effHtml(sm, set){
+  var h = '<div class="card effcard"><h2>Tehoprosentit – '+(set==='all' ? 'koko ottelu' : 'erä '+set)+'</h2>'
+    + '<div class="tablewrap"><table id="efftable"><thead><tr><th rowspan="2">Nro</th><th rowspan="2">Nimi</th>';
+  SKILLS.forEach(function(k){ h += '<th class="grp s0" colspan="'+(1 + EFF.filter(function(e){ return e.sk === k.k; }).length)+'">'+k.name+'</th>'; });
+  h += '</tr><tr>';
+  SKILLS.forEach(function(k){ h += '<th class="s0">kpl</th>'; EFF.forEach(function(e){ if (e.sk === k.k) h += '<th>'+e.t+'</th>'; }); });
+  h += '</tr></thead><tbody>';
+  if (!sm.rows.length) h += '<tr><td colspan="'+(2 + SKILLS.length + EFF.length)+'" class="zero">Ei kirjauksia</td></tr>';
+  sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+effCells(r.s)+'</tr>'; });
+  h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+effCells(sm.team)+'</tr></tbody></table></div>'
+    + '<p class="help">'+EFF_HELP+'</p></div>';
+  return h;
+}
 function distHtml(sm, set){
   var h = '<div class="card distcard"><h2>Arvosanajakauma – '+(set==='all' ? 'koko ottelu' : 'erä '+set)+'</h2>'
     + '<p class="help" style="margin-top:-4px">Montako kertaa kukin arvosana annettiin. <b>1 = paras</b> (vihreä), suurin numero = huonoin (punainen). ka = keskiarvo, pienempi on parempi.</p>'
@@ -589,7 +726,7 @@ function renderSum(){
   sets.forEach(function(n){ h += '<button data-s="'+n+'" class="'+(sumSet===n?'on':'')+'">Erä '+n+'</button>'; });
   h += '</div><div class="row noprint" id="pdfrow"><button class="btn big green" id="pdf">Jaa PDF</button>'
     + '<button class="btn gray" id="print">Tulosta</button>'
-    + '<span class="pdfnote">PDF: yhteenveto ja arvosanajakauma, '+(sumSet==='all' ? 'koko ottelu' : 'erä '+sumSet)+'</span></div>'
+    + '<span class="pdfnote">PDF: yhteenveto, tehoprosentit ja arvosanajakauma, '+(sumSet==='all' ? 'koko ottelu' : 'erä '+sumSet)+'</span></div>'
     + '<div class="tablewrap"><table id="sumtable"><thead><tr><th rowspan="2">Nro</th><th rowspan="2">Nimi</th>'
     + '<th colspan="4" class="grp">Suoritukset: kpl ja keskiarvo (ka) · 1 = paras</th><th colspan="3" class="grp">Pisteet +1</th><th colspan="4" class="grp">Virheet −1</th><th colspan="3" class="grp">Yhteensä</th></tr><tr>';
   SKILLS.forEach(function(s){ h += '<th>'+s.name+'<br>1–'+s.max+'<br><span style="font-weight:600;color:var(--green)">1 = paras</span></th>'; });
@@ -599,6 +736,7 @@ function renderSum(){
   sm.rows.forEach(function(r){ h += '<tr><td><b>'+esc(r.p.num)+'</b></td><td class="nm">'+esc(r.p.name)+'</td>'+statCells(r.s)+'</tr>'; });
   h += '<tr class="tot"><td></td><td class="nm">Joukkue yht.</td>'+statCells(sm.team)+'</tr></tbody></table></div>'
     + '<p class="help"><b>Arvosanoissa 1 = paras:</b> mitä pienempi keskiarvo (ka), sitä parempi. <b>Syöttö 1 (ässä / seinille) = ässä +1 ja hyökkäys 1 = hyökkäyspiste +1</b> (myös aiemmin kirjatut syöttö- ja hyökkäysykköset lasketaan pisteiksi). Syöttö 4, vastaanotto 4 ja hyökkäys 3 ovat samalla syöttö-, vastaanotto- ja hyökkäysvirheitä (−1). Arvosanapainike ja vastaava piste- tai virhepainike kirjaavat saman yhdistetyn merkinnän, joka lasketaan kerran kumpaankin sarakkeeseen. Netto = pisteet (+1) miinus virheet (−1).</p></div>'
+    + effHtml(sm, sumSet)
     + oppHtml(m, sumSet)
     + distHtml(sm, sumSet)
     + legendHtml()
@@ -646,8 +784,23 @@ function csvSummary(m, sep){
       out.push(line(a, sep));
     });
   });
-  // Vastustajan virheet omana osionaan loppuun (sama sarakemäärä, jotta tiedosto pysyy yhtenäisenä)
   var padTo = function(a){ while (a.length < head.length) a.push(''); return a; };
+  // Tehoprosentit omana osionaan (kokonaisluvut, tyhjä = ei suorituksia; sama sarakemäärä)
+  out.push(line(padTo([]), sep));
+  var eh = ['Tehoprosentit','Päivä','Erä','Nro','Nimi'];
+  SKILLS.forEach(function(k){ eh.push(k.plural+' kpl'); EFF.forEach(function(e){ if (e.sk === k.k) eh.push(e.csv); }); });
+  out.push(line(padTo(eh), sep));
+  ['all'].concat(setsOf(m)).forEach(function(set){
+    var sm = summarize(m, set);
+    var rows = sm.rows.map(function(r){ return [r.p.num, r.p.name, r.s]; });
+    rows.push(['', 'Joukkue yhteensä', sm.team]);
+    rows.forEach(function(r){
+      var v = effStats(r[2]), a = ['vs ' + (m.opponent||''), fiDate(m.date), set==='all' ? 'Koko ottelu' : 'Erä '+set, r[0], r[1]];
+      SKILLS.forEach(function(k){ a.push(r[2][k.k].n); EFF.forEach(function(e, i){ if (e.sk === k.k) a.push(v[i] == null ? '' : v[i]); }); });
+      out.push(line(padTo(a), sep));
+    });
+  });
+  // Vastustajan virheet omana osionaan loppuun (sama sarakemäärä, jotta tiedosto pysyy yhtenäisenä)
   out.push(line(padTo([]), sep));
   out.push(line(padTo(['Ottelu','Päivä','Erä','','Vastustajan virheet'].concat(OPP.map(function(o){ return o.plural; }), ['Yhteensä'])), sep));
   ['all'].concat(setsOf(m)).forEach(function(set){
@@ -868,6 +1021,7 @@ function buildReportPdf(m, set, rhForce){
   y += 14;
   // Taulukko 2: arvosanajakauma
   y += 15;
+  var pagesMain = 0;  // sivumäärä ilman tehoprosenttitaulukkoa (tiivistyspäätöstä varten)
   var cols2 = [{w:26},{w:104}], heads2 = [{t:'Nro', full:true},{t:'Nimi', full:true, align:'l'}], groups2 = [{t:'',span:2}];
   var rest = d.W - 2*L - 130, nc = 0; SKILLS.forEach(function(k){ nc += k.max + 2; });
   var cw = rest / nc;
@@ -894,7 +1048,38 @@ function buildReportPdf(m, set, rhForce){
   var needed = 18 + 12 + 12.4 + rows2.length * RH;
   if (y + needed > ctx.bottom && rows2.length * RH + 60 < ctx.bottom - ctx.top){ d.page(); y = ctx.top; }
   d.text('Arvosanajakauma – ' + setTxt.toLowerCase() + ' (montako kertaa kukin arvosana annettiin)', L, y, 10.5, {bold:true}); y += 6;
-  pdfTable(d, L, y, {rh:RH, cols:cols2, heads:heads2, rows:rows2, groups:groups2}, ctx);
+  y = pdfTable(d, L, y, {rh:RH, cols:cols2, heads:heads2, rows:rows2, groups:groups2}, ctx);
+  pagesMain = d.pages.length;
+  // Taulukko 3: tehoprosentit (Nro + Nimi vasemmalla, joukkue viimeisenä). Omalle sivulleen, jos ei mahdu.
+  var cols3 = [{w:26},{w:104}], heads3 = [{t:'Nro', full:true},{t:'Nimi', full:true, align:'l'}], groups3 = [{t:'',span:2}];
+  var cw3 = (d.W - 2*L - 130) / (EFF.length + 0.6 * SKILLS.length), kw3 = 0.6 * cw3;  // kpl-sarake kapeampi
+  SKILLS.forEach(function(k){
+    var ks = EFF.filter(function(e){ return e.sk === k.k; });
+    groups3.push({t:k.name, span:1 + ks.length});
+    cols3.push({w:kw3, bg:[0.965,0.97,0.976], gs:true}); heads3.push({t:'kpl'});
+    ks.forEach(function(e){ cols3.push({w:cw3}); heads3.push({t:e.t.replace(/&shy;/g, '')}); });
+  });
+  var rows3 = players.map(function(r){
+    var v = effStats(r.s), c = [{t:String(r.p.num||''), bold:true}, {t:r.p.name, bold:true, align:'l'}];
+    SKILLS.forEach(function(k){
+      var n = r.s[k.k].n; c.push(n ? {t:String(n), color:[0.3,0.33,0.4]} : {t:'–', color:PC.mute});
+      EFF.forEach(function(e, i){ if (e.sk !== k.k) return; var cl = effColor(e, v[i]);
+        c.push(v[i] == null ? {t:'–', color:PC.mute} : {t:pctTxt(v[i]), bold:true, color: cl === 'pos' ? PC.pos : cl === 'neg' ? PC.neg : PC.ink, fs:9.5}); });
+    });
+    return {c:c, tot:r.tot};
+  });
+  y += 15;
+  var need3 = 18 + 12 + 21 + rows3.length * RH + 14;
+  if (y + need3 > ctx.bottom && rows3.length * RH + 70 < ctx.bottom - ctx.top){ d.page(); y = ctx.top; }
+  var onOwn = y === ctx.top, RH3 = onOwn ? Math.max(RH, Math.min(18, Math.floor((ctx.bottom - ctx.top - 80) / rows3.length))) : RH;
+  d.text('Tehoprosentit – ' + setTxt.toLowerCase(), L, y, onOwn ? 12 : 10.5, {bold:true}); y += 6;
+  y = pdfTable(d, L, y, {rh:RH3, fs: onOwn ? 10 : 8.5, cols:cols3, heads:heads3, rows:rows3, groups:groups3}, ctx);
+  // Kaavojen selitys taulukon alle (rivitetään sivun leveyteen)
+  var hl = [], ln = '';
+  EFF_HELP.split(' ').forEach(function(wd){ var t = ln ? ln + ' ' + wd : wd; if (pdfTW(winAnsi(t), 8.5) > d.W - 2*L - 6 && ln){ hl.push(ln); ln = wd; } else ln = t; });
+  if (ln) hl.push(ln);
+  if (y + 4 + hl.length * 11 > ctx.bottom){ d.page(); y = ctx.top; }
+  hl.forEach(function(t, i){ d.text(t, L, y + 6 + i * 11, 8.5, {color:[0.3,0.33,0.4]}); });
   // Alatunniste joka sivulle
   var now = new Date(), stamp = 'Luotu ' + now.getDate() + '.' + (now.getMonth()+1) + '.' + now.getFullYear() + ' ' + pad(now.getHours()) + '.' + pad(now.getMinutes());
   d.pages.forEach(function(ops, i){
@@ -903,7 +1088,7 @@ function buildReportPdf(m, set, rhForce){
     d.text('1 = paras. Syöttö 1 = ässä +1, Hyökkäys 1 = hyökkäyspiste +1, S4/V4/H3 = virhe −1. Netto = pisteet (+1) − virheet (−1).', L, d.H - TOP - 3, 8, {color:[0.3,0.33,0.4]});
     d.text(stamp + '   ·   Sivu ' + (i+1) + '/' + d.pages.length, d.W - L - 200, d.H - TOP - 3, 8, {w:200, align:'r', color:[0.3,0.33,0.4]});
   });
-  if (!rhForce && RH > 13 && d.pages.length > 1) return buildReportPdf(m, set, 13);   // tiivistetään, jotta mahtuu yhdelle sivulle
+  if (!rhForce && RH > 13 && pagesMain > 1) return buildReportPdf(m, set, 13);   // tiivistetään, jotta mahtuu yhdelle sivulle
   return d.bytes('Lentopallotilastot vs ' + (m.opponent||'') + ' ' + fiDate(m.date) + ' – ' + setTxt);
 }
 // Jaa PDF: luodaan synkronisesti ja kutsutaan navigator.sharea suoraan napin painalluksesta (iPadin vaatimus).
@@ -961,12 +1146,18 @@ function renderLog(){
 // ---------- Pelaajat ----------
 function renderRoster(){
   var main = document.getElementById('main');
-  var h = '<div class="card"><h2>Pelaajat ('+S.roster.length+'/'+MAXP+')</h2><p class="help">Muutokset tallentuvat automaattisesti. Rastita passarit, niin passi-rivi korostuu heille.</p>'
-    + '<div class="prow" style="font-weight:800;font-size:18px;color:var(--muted)"><div>Numero</div><div>Nimi</div><div>Passari</div><div></div></div><div id="plist">';
-  S.roster.forEach(function(p){
-    h += '<div class="prow" data-id="'+p.id+'"><input type="number" inputmode="numeric" min="0" max="99" class="pnum" value="'+esc(p.num)+'" aria-label="Pelinumero">'
+  var h = '<div class="card"><h2>Pelaajat ('+S.roster.length+'/'+MAXP+')</h2><p class="help">Muutokset tallentuvat automaattisesti. Valitse jokaiselle rooli – Kirjaa-näkymässä pelaajat ryhmitellään roolin mukaan '
+    + '(passarit, liberot ja yleispelaajat, keskarit/hakkurit, muut). Nuolilla ▲▼ muutat järjestystä ryhmän sisällä. Passareille passi-rivi korostuu.</p>'
+    + '<div class="prow hd"><div style="grid-area:num">Numero</div><div style="grid-area:name">Nimi</div><div class="hrole" style="grid-area:role">Rooli</div><div style="grid-area:ord">Järjestys</div><div style="grid-area:x"></div></div><div id="plist">';
+  var ros = sortedRoster(), last = null;
+  ros.forEach(function(p, i){
+    var r = roleOf(p);
+    if (r !== last){ h += '<div class="rgrp" data-role="'+r+'">'+esc(rolePlural(r))+'</div>'; last = r; }
+    var first = i === 0 || roleOf(ros[i-1]) !== r, lastIn = i === ros.length-1 || roleOf(ros[i+1]) !== r;
+    h += '<div class="prow" data-id="'+p.id+'" data-role="'+r+'"><input type="number" inputmode="numeric" min="0" max="99" class="pnum" value="'+esc(p.num)+'" aria-label="Pelinumero">'
       + '<input type="text" class="pname" value="'+esc(p.name)+'" placeholder="Nimi" autocomplete="off" aria-label="Nimi">'
-      + '<label class="chk'+(p.setter?' on':'')+'"><input type="checkbox" class="pset"'+(p.setter?' checked':'')+'> Passari</label>'
+      + '<div class="roles">' + ROLES.map(function(R){ return '<button class="rb '+R.k+(r===R.k?' on':'')+'" data-r="'+R.k+'" aria-pressed="'+(r===R.k)+'">'+(R.label||R.name)+'</button>'; }).join('') + '</div>'
+      + '<div class="ord"><button class="up" aria-label="Siirrä ylös"'+(first?' disabled':'')+'>▲</button><button class="dn" aria-label="Siirrä alas"'+(lastIn?' disabled':'')+'>▼</button></div>'
       + '<button class="x" aria-label="Poista pelaaja">×</button></div>';
   });
   h += '</div><div class="row" style="margin-top:14px"><button class="btn big green" id="addp"'+(S.roster.length>=MAXP?' disabled style="opacity:.4"':'')+'>+ Lisää pelaaja</button>'
@@ -978,14 +1169,14 @@ function renderRoster(){
     var p = rowP(ev.target); if (!p) return;
     if (ev.target.classList.contains('pnum')) p.num = ev.target.value.replace(/[^0-9]/g,'').slice(0,3);
     if (ev.target.classList.contains('pname')) p.name = ev.target.value.slice(0,30);
-    if (ev.target.classList.contains('pset')){ p.setter = ev.target.checked; ev.target.parentNode.classList.toggle('on', p.setter); }
     var m = cur(); if (m) syncMatchPlayerIfPresent(m, p);
     save();
   });
-  list.addEventListener('change', function(ev){
-    if (!ev.target.classList.contains('pset')) return;
-    var p = rowP(ev.target); if (!p) return;
-    p.setter = ev.target.checked; ev.target.parentNode.classList.toggle('on', p.setter); save();
+  list.addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    var p = rowP(b); if (!p) return;
+    if (b.classList.contains('rb')){ setRole(p.id, b.dataset.r); renderRoster(); return; }
+    if (b.classList.contains('up') || b.classList.contains('dn')){ if (movePlayer(p.id, b.classList.contains('up') ? -1 : 1)) renderRoster(); return; }
   });
   list.addEventListener('click', function(ev){
     if (!ev.target.classList.contains('x')) return;
@@ -996,7 +1187,7 @@ function renderRoster(){
   });
   document.getElementById('addp').onclick = function(){
     if (S.roster.length >= MAXP) return;
-    var p = {id:uid(), num:'', name:'', setter:false}; S.roster.push(p); save(); renderRoster();
+    var p = {id:uid(), num:'', name:'', setter:false, role:'', ord:maxOrd()+1}; S.roster.push(p); save(); renderRoster();
     var ins = document.querySelectorAll('.prow[data-id="'+p.id+'"] .pnum'); if (ins[0]) ins[0].focus();
   };
   document.getElementById('todone').onclick = function(){
@@ -1074,7 +1265,7 @@ function renderMatches(){
       try {
         var o = JSON.parse(rd.result);
         if (!o || !Array.isArray(o.roster) || !Array.isArray(o.matches)) throw 0;
-        ask('Korvataanko nykyiset tiedot varmuuskopiolla (' + o.matches.length + ' ottelua)?', 'Palauta', function(){ S = o; save(); toast('Varmuuskopio palautettu'); go('ottelut'); });
+        ask('Korvataanko nykyiset tiedot varmuuskopiolla (' + o.matches.length + ' ottelua)?', 'Palauta', function(){ S = migrate(o); save(); toast('Varmuuskopio palautettu'); go('ottelut'); });
       } catch(e){ toast('Virheellinen tiedosto', 'bad'); }
     };
     rd.readAsText(f);
