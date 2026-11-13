@@ -1304,6 +1304,80 @@ function renderRoster(){
 function syncMatchPlayerIfPresent(m, p){
   (m.players||[]).forEach(function(x){ if (x.id===p.id){ x.num=p.num; x.name=p.name; x.setter=!!p.setter; } });
 }
+// ---------- Varmuuskopion yhdistäminen (v14) ----------
+// Ottelut lisätään nykyisiin. Sama id ja sama sisältö ohitetaan; sama id ja eri sisältö saa uuden id:n.
+function stableJson(v){
+  if (typeof v === 'undefined') return 'null';
+  if (v === null || typeof v !== 'object') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map(stableJson).join(',') + ']';
+  var keys = Object.keys(v).sort();
+  return '{' + keys.map(function(k){ return JSON.stringify(k) + ':' + stableJson(v[k]); }).join(',') + '}';
+}
+function matchBody(m){
+  var o = {};
+  Object.keys(m).forEach(function(k){ if (k !== 'id') o[k] = m[k]; });
+  return stableJson(o);
+}
+function matchById(id){ for (var i=0;i<S.matches.length;i++) if (S.matches[i].id === id) return S.matches[i]; return null; }
+function freshMatchId(){ var id; do { id = uid(); } while (matchById(id)); return id; }
+function copyPlayer(p){
+  var np = {};
+  Object.keys(p).forEach(function(k){ np[k] = p[k]; });
+  if (np.num == null) np.num = '';
+  if (!np.name) np.name = '';
+  np.setter = !!np.setter;
+  if (!(typeof np.ord === 'number' && isFinite(np.ord))) np.ord = maxOrd() + 1;
+  return np;
+}
+function addPlayerIfMissing(p){
+  if (!p || p.id == null || p.id === '') return;
+  if (pById(p.id)) return;
+  S.roster.push(copyPlayer(p));
+}
+function playerInFile(id, o, m){
+  var i, p, e;
+  for (i=0;i<(o.roster||[]).length;i++){ p = o.roster[i]; if (p && p.id===id) return p; }
+  for (i=0;i<((m&&m.players)||[]).length;i++){ p = m.players[i]; if (p && p.id===id) return p; }
+  for (i=0;i<((m&&m.events)||[]).length;i++){
+    e = m.events[i];
+    if (e && e.pid===id) return {id:id, num:e.num||'', name:e.name||'', setter:!!e.setter};
+  }
+  return null;
+}
+function ensureMatchPlayers(m, o){
+  var seen = {};
+  function want(id){
+    if (id == null || id === '' || seen[id]) return;
+    seen[id] = 1;
+    if (pById(id)) return;
+    var p = playerInFile(id, o, m);
+    if (p) addPlayerIfMissing(p);
+  }
+  (m.players||[]).forEach(function(p){ if (p) want(p.id); });
+  (m.events||[]).forEach(function(e){ if (e) want(e.pid); });
+}
+function mergeBackup(raw){
+  var o = migrate(raw);
+  if (!o || !Array.isArray(o.roster) || !Array.isArray(o.matches)) return 0;
+  o.roster.forEach(addPlayerIfMissing);
+  var added = 0;
+  o.matches.forEach(function(src){
+    if (!src || typeof src !== 'object') return;
+    var incoming = JSON.parse(JSON.stringify(src));
+    var existing = (incoming.id != null && incoming.id !== '') ? matchById(incoming.id) : null;
+    if (existing){
+      if (matchBody(existing) === matchBody(incoming)){ ensureMatchPlayers(incoming, o); return; }
+      incoming.id = freshMatchId();
+    } else if (incoming.id == null || incoming.id === ''){
+      incoming.id = freshMatchId();
+    }
+    S.matches.push(incoming);
+    added++;
+    ensureMatchPlayers(incoming, o);
+  });
+  migrate(S);
+  return added;
+}
 
 // ---------- Ottelut ----------
 function renderMatches(){
@@ -1322,9 +1396,9 @@ function renderMatches(){
       + '<button class="btn" data-a="sum">Yhteenveto</button><button class="btn gray" data-a="rec">Jatka kirjaamista</button>'
       + '<button class="btn red" data-a="del">Poista</button></div>';
   });
-  h += '</div></div><div class="card"><h3>Varmuuskopio</h3><p class="help">Tallenna kaikki tiedot (pelaajat ja ottelut) tiedostoksi: valitse jakovalikosta &quot;Tallenna tiedostoihin&quot; ja esim. iCloud Drive. Palauta-napilla valitset tiedoston Tiedostot-sovelluksesta.</p><div class="row">'
+  h += '</div></div><div class="card"><h3>Varmuuskopio</h3><p class="help">Tallenna kaikki tiedot (pelaajat ja ottelut) tiedostoksi: valitse jakovalikosta &quot;Tallenna tiedostoihin&quot; ja esim. iCloud Drive. Palautus lisää ottelut nykyisiin tietoihin eikä poista olemassa olevia. Voit valita useita tiedostoja kerralla.</p><div class="row">'
     + '<button class="btn gray" id="bk">Tallenna varmuuskopio</button><button class="btn gray" id="rs">Palauta varmuuskopio</button>'
-    + '<input type="file" id="rsfile" accept=".json,application/json" class="hidden"></div></div>';
+    + '<input type="file" id="rsfile" accept=".json,application/json" multiple class="hidden"></div></div>';
   main.innerHTML = h;
   document.getElementById('newm').onclick = function(){
     if (!S.roster.length){ toast('Lisää ensin pelaajat', 'warn'); go('pelaajat'); return; }
@@ -1364,16 +1438,39 @@ function renderMatches(){
   };
   document.getElementById('rs').onclick = function(){ document.getElementById('rsfile').click(); };
   document.getElementById('rsfile').onchange = function(ev){
-    var f = ev.target.files[0]; if (!f) return;
-    var rd = new FileReader();
-    rd.onload = function(){
-      try {
-        var o = JSON.parse(rd.result);
-        if (!o || !Array.isArray(o.roster) || !Array.isArray(o.matches)) throw 0;
-        ask('Korvataanko nykyiset tiedot varmuuskopiolla (' + o.matches.length + ' ottelua)?', 'Palauta', function(){ S = migrate(o); save(); toast('Varmuuskopio palautettu'); go('ottelut'); });
-      } catch(e){ toast('Virheellinen tiedosto', 'bad'); }
-    };
-    rd.readAsText(f);
+    var chosen = Array.prototype.slice.call(ev.target.files || []);
+    ev.target.value = '';
+    if (!chosen.length) return;
+    var left = chosen.length, out = new Array(chosen.length), bad = 0;
+    chosen.forEach(function(f, i){
+      var rd = new FileReader();
+      function finish(o){
+        if (o) out[i] = o; else bad++;
+        if (--left) return;
+        var oks = out.filter(function(x){ return x; });
+        if (!oks.length){ toast('Virheellinen tiedosto', 'bad'); return; }
+        if (bad) toast('Virheellinen tiedosto', 'bad');
+        var n = 0;
+        oks.forEach(function(o){ n += o.matches.length; });
+        var word = n === 1 ? 'ottelu' : 'ottelua';
+        ask('Lisätäänkö varmuuskopion ' + n + ' ' + word + ' nykyisiin tietoihin?', 'Lisää', function(){
+          var added = 0;
+          oks.forEach(function(o){ added += mergeBackup(o); });
+          save();
+          toast(added ? ('Lisätty ' + added + ' ' + (added === 1 ? 'ottelu' : 'ottelua')) : 'Ottelut olivat jo tallessa');
+          go('ottelut');
+        });
+      }
+      rd.onload = function(){
+        try {
+          var o = JSON.parse(rd.result);
+          if (!o || !Array.isArray(o.roster) || !Array.isArray(o.matches)) throw 0;
+          finish(migrate(o));
+        } catch(e){ finish(null); }
+      };
+      rd.onerror = function(){ finish(null); };
+      rd.readAsText(f);
+    });
   };
 }
 
